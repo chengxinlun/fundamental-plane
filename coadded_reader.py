@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib.pylab as plt
 from astropy.io import fits
 
+# DEPRECIATED
 
 # Reader specified for Sun Jiayi's coadded spectra
 def read_object(fits_file):

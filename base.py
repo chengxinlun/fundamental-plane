@@ -15,6 +15,7 @@ Current list of functions for public use:
 import pickle
 import os
 import numpy as np
+from position import Location
 
 
 # Recommended method to read a single pkl file
@@ -27,17 +28,16 @@ def read_database(filein):
 
 # Recommended method to read data either raw or coadded
 def read_data(data_type, rmid):
-    os.chdir("../data/" + data_type + "/" + str(rmid))
+    os.chdir(Location.project_loca + "data/" + data_type + "/" + str(rmid))
     wave = read_database("wave.pkl")
     flux = read_database("flux.pkl")
     fluxerr = read_database("ivar.pkl")
-    os.chdir("../../../code")
     return [wave, flux, fluxerr]
 
 
 # Get the whole sid list
 def get_total_rmid_list():
-    readfile = open("info_database/rmid.pkl", "rb")
+    readfile = open(Location.project_loca + "info_database/rmid.pkl", "rb")
     sid_list = pickle.load(readfile)
     readfile.close()
     return sid_list

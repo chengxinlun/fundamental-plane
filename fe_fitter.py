@@ -8,8 +8,8 @@ import matplotlib.pylab as plt
 from astropy.modeling import models, fitting
 import warnings
 import fe_temp_observed
-from code.base.base import read_data, get_total_rmid_list, mask_points, check_line, extract_fit_part, save_fig
-from code.base.position import Location
+from base import read_data, get_total_rmid_list, mask_points, check_line, extract_fit_part, save_fig
+from position import Location
 import time
 
 # Define a special class for raising any exception related during the fit
@@ -81,8 +81,8 @@ def template_fit(wave, flux, error, rmid):
 
 
 # Function to output fit result
-def output_fit(fit_result, rmid):
-    picklefile = open(Location.project_loca + "result/fit_with_temp/data/" + str(rmid) + ".pkl", "wb")
+def output_fit(fit_result, rmid, band):
+    picklefile = open(Location.project_loca + "result/fit_with_temp/data/" + str(rmid) + "-" + band + ".pkl", "wb")
     pickle.dump(fit_result, picklefile)
     picklefile.close()
 
@@ -103,7 +103,7 @@ def main_process(rmid):
     [wave, flux, error] = extract_fit_part(wave, flux, error, 4000.0, 5500.0)
     # Begin fitting and handling exception
     try:
-        [fit_res, cont_res, rcs] = template_fit(wave, flux, error,  img_directory, rmid)
+        [fit_res, cont_res, rcs] = template_fit(wave, flux, error, rmid)
     except SpectraException as reason:
         exception_logging(rmid, reason)
         print("Failed\n\n")
@@ -112,21 +112,22 @@ def main_process(rmid):
     output_fit(cont_res, rmid, "cont")
     print("Finished\n\n")
         
-
-# Getting total source list and setting up workspace directories
+os.chdir(Location.project_loca + "result/")
 try:
-    os.mkdir("Fe2")
+    os.mkdir("fit_with_temp")
 except OSError:
     pass
-rmid_list = get_total_rmid_list()
-# rmid_list = [1141]
-os.chdir("Fe2")
-for each_obj in rmid_list:
-    try:
-        os.mkdir(str(each_obj))
-    except OSError:
-        pass
-os.chdir("../")
+# rmid_list = get_total_rmid_list()
+rmid_list = [131]
+os.chdir("fit_with_temp")
+try:
+    os.mkdir("fig")
+except OSError:
+    pass
+try:
+    os.mkdir("data")
+except OSError:
+    pass
 # Start working process
 for each_rmid in rmid_list:
     main_process(str(each_rmid))
