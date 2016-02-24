@@ -3,7 +3,7 @@ A place for frequently used funtions
 
 Current list of functions for public use:
     read_data: read the raw data with rmid
-    get_total_sid_list: get a list of all the rmid in the raw data base
+    get_total_rmid_list: get a list of all the rmid in the raw data base
     mask_points: delete points with error = 0
     check_line: check whether wavelength is inside the range of wave
     extract_fit_part: extract the part between min_wave and max_wave
