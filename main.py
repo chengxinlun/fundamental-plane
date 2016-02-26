@@ -1,5 +1,6 @@
 from base import get_total_rmid_list
 from raw_reader import raw_reader
+from multiprocessing import Pool
 
 def task_splitter(task, num_thread):
     num_per_thread = int(len(task) / num_thread)
@@ -12,7 +13,11 @@ def task_splitter(task, num_thread):
 
 def read_all_raw_data():
     rmid_list = get_total_rmid_list()
-    splitted = task_splitter(rmid_list, 4)
-    for each in rmid_list:
-        raw_reader(each)
-        print("Finished for " + str(each))
+    #splitted = task_splitter(rmid_list, 4)
+    #for each in rmid_list:
+    #    raw_reader(each)
+    #    print("Finished for " + str(each))
+    workers = Pool(processes = 4)
+    workers.map(raw_reader, rmid_list)
+
+read_all_raw_data()
