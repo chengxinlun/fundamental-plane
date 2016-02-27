@@ -8,9 +8,11 @@ import matplotlib.pylab as plt
 from astropy.modeling import models, fitting
 import warnings
 import fe_temp_observed
-from base import read_data, get_total_rmid_list, mask_points, check_line, extract_fit_part, save_fig
+from base import read_raw_data, get_total_rmid_list, mask_points, check_line, extract_fit_part, save_fig
 from position import Location
 import time
+from multiprocessing import Pool, Manager
+from functools import partial
 
 # Define a special class for raising any exception related during the fit
 
@@ -20,8 +22,8 @@ class SpectraException(Exception):
 
 
 # Function to fit quasar with the template
-def template_fit(wave, flux, error, rmid):
-    img_directory = Location.project_loca + "result/fit_with_temp/fig"
+def template_fit(wave, flux, error, rmid, mjd):
+    img_directory = Location.project_loca + "result/fit_with_temp/fig/" + str(rmid)
     # Fit continuum
     fig = plt.figure()
     plt.plot(wave, flux)
@@ -35,13 +37,13 @@ def template_fit(wave, flux, error, rmid):
     with warnings.catch_warnings():
         warnings.filterwarnings('error')
         try:
-            cont_fit = cont_fitter(cont, cont_wave, cont_flux, weights = cont_error, maxiter = 10000)
+            cont_fit = cont_fitter(cont, cont_wave, cont_flux, weights = cont_error ** (-2), maxiter = 10000)
         except Exception:
-            save_fig(fig, img_directory, str(rmid) + "-cont-failed")
+            save_fig(fig, img_directory, str(mjd) + "-cont-failed")
             plt.close()
             raise SpectraException("Continuum fit failed")
     plt.plot(wave, cont_fit(wave))
-    save_fig(fig, img_directory, str(rmid) + "-cont-success")
+    save_fig(fig, img_directory, str(mjd) + "-cont-success")
     plt.close()
     # Fit emission lines
     flux = flux - cont_fit(wave)
@@ -59,17 +61,14 @@ def template_fit(wave, flux, error, rmid):
     with warnings.catch_warnings():
         warnings.filterwarnings('error')
         try:
-            start = time.time()
-            fit = fitter(hbeta_complex_fit_func, wave, flux, weights = error, maxiter = 3000)
-            print("Time taken: ")
-            print(time.time() - start)
+            fit = fitter(hbeta_complex_fit_func, wave, flux, weights = error ** (-2), maxiter = 3000)
         except Exception:
-            save_fig(fig1, img_directory, str(rmid) + "-failed")
+            save_fig(fig1, img_directory, str(mjd) + "-failed")
             plt.close()
             raise SpectraException("Fit failed")
     expected = np.array(fit(wave))
     plt.plot(wave, expected)
-    save_fig(fig1, img_directory, str(rmid) + "-succeed")
+    save_fig(fig1, img_directory, str(mjd) + "-succeed")
     plt.close()
     rcs = 0
     for i in range(len(flux)):
@@ -81,53 +80,62 @@ def template_fit(wave, flux, error, rmid):
 
 
 # Function to output fit result
-def output_fit(fit_result, rmid, band):
-    picklefile = open(Location.project_loca + "result/fit_with_temp/data/" + str(rmid) + "-" + band + ".pkl", "wb")
+def output_fit(fit_result, rmid, mjd, band):
+    picklefile = open(Location.project_loca + "result/fit_with_temp/data/" + str(rmid) + "/" + str(mjd) + "-" + band + ".pkl", "wb")
     pickle.dump(fit_result, picklefile)
     picklefile.close()
 
 
 # Exception logging process
-def exception_logging(rmid, reason):
+def exception_logging(rmid, mjd, reason):
     log = open(Location.project_loca + "Fe2_fit_error.log", "a")
-    log.write(str(rmid) + " " + str(reason) + "\n")
+    log.write(str(rmid) + " " + str(mjd) + " " + str(reason) + "\n")
     log.close()
 
 
 # Individual working process
-def main_process(rmid):
-    print("Beginning process for " + str(rmid))
+def fe_fitter_single(rmid, lock, mjd):
     # Read data and preprocessing
-    [wave, flux, error] = read_data("coadded", rmid)
+    [wave, flux, error] = read_raw_data(rmid, mjd)
     [wave, flux, error] = mask_points(wave, flux,  error)
     [wave, flux, error] = extract_fit_part(wave, flux, error, 4000.0, 5500.0)
+    os.chdir(Location.project_loca + "result/fit_with_temp/data")
+    try:
+        os.mkdir(str(rmid))
+    except OSError:
+        pass
+    os.chdir(Location.project_loca + "result/fit_with_temp/fig")
+    try:
+        os.mkdir(str(rmid))
+    except OSError:
+        pass
     # Begin fitting and handling exception
     try:
-        [fit_res, cont_res, rcs] = template_fit(wave, flux, error, rmid)
+        [fit_res, cont_res, rcs] = template_fit(wave, flux, error, rmid, mjd)
     except SpectraException as reason:
-        exception_logging(rmid, reason)
-        print("Failed\n\n")
+        lock.acquire()
+        exception_logging(rmid, mjd, reason)
+        print("Failed")
+        lock.release()
         return
-    output_fit(fit_res, rmid, "Fe2")
-    output_fit(cont_res, rmid, "cont")
+    output_fit(fit_res, rmid, mjd, "Fe2")
+    output_fit(cont_res, rmid, mjd, "cont")
+    lock.acquire()
+    print("Finished for " + str(mjd))
+    lock.release()
+
+
+def fe_fitter(rmid):
+    print("Beginning process for " + str(rmid))
+    mjd_list = map(int, os.listdir(Location.project_loca + "data/raw/" + str(rmid)))
+    pool = Pool(processes = 4)
+    m = Manager()
+    lock = m.Lock()
+    f = partial(fe_fitter_single, rmid, lock)
+    pool.map(f, mjd_list)
+    pool.close()
+    pool.join()
     print("Finished\n\n")
-        
-os.chdir(Location.project_loca + "result/")
-try:
-    os.mkdir("fit_with_temp")
-except OSError:
-    pass
-# rmid_list = get_total_rmid_list()
-rmid_list = [131]
-os.chdir("fit_with_temp")
-try:
-    os.mkdir("fig")
-except OSError:
-    pass
-try:
-    os.mkdir("data")
-except OSError:
-    pass
-# Start working process
-for each_rmid in rmid_list:
-    main_process(str(each_rmid))
+
+fe_fitter(1141)
+

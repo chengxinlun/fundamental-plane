@@ -2,7 +2,7 @@
 A place for frequently used funtions
 
 Current list of functions for public use:
-    read_data: read the raw data with rmid
+    read_raw_data: read the raw data with rmid
     get_total_rmid_list: get a list of all the rmid in the raw data base
     mask_points: delete points with error = 0
     check_line: check whether wavelength is inside the range of wave
@@ -26,12 +26,12 @@ def read_database(filein):
     return data
 
 
-# Recommended method to read data either raw or coadded
-def read_data(data_type, rmid):
-    os.chdir(Location.project_loca + "data/" + data_type + "/" + str(rmid))
+# Recommended method to read data
+def read_raw_data(rmid, mjd):
+    os.chdir(Location.project_loca + "data/raw/" + str(rmid) + "/" + str(mjd))
     wave = read_database("wave.pkl")
     flux = read_database("flux.pkl")
-    fluxerr = read_database("ivar.pkl")
+    fluxerr = read_database("error.pkl")
     return [wave, flux, fluxerr]
 
 
