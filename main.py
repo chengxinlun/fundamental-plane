@@ -22,8 +22,6 @@ def read_all_raw_data():
 
 
 def fit_all():
-
-
-
-
-read_all_raw_data()
+    rmid_list = get_total_rmid_list()
+    for each in rmid_list:
+        fe_fitter(each)

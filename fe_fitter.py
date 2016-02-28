@@ -141,6 +141,3 @@ def fe_fitter(rmid):
     pool.close()
     pool.join()
     print("Finished\n\n")
-
-
-fe_fitter(1141)
