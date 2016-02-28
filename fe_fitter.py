@@ -33,15 +33,20 @@ def template_fit(wave, flux, error, rmid, mjd):
     cont_flux = np.append(cont_flux, temp_flux)
     cont_error = np.append(cont_error, temp_error)
     cont_fitter = fitting.LevMarLSQFitter()
-    cont = models.PowerLaw1D(cont_flux[0], cont_wave[0], - np.log(cont_flux[-1]/cont_flux[0]) / np.log(cont_wave[-1]/cont_wave[0]), fixed = {"x_0": True})
+    try:
+        cont = models.PowerLaw1D(cont_flux[0], cont_wave[0], - np.log(cont_flux[-1]/cont_flux[0]) / np.log(cont_wave[-1]/cont_wave[0]), fixed = {"x_0": True})
+    except Exception as reason:
+        save_fig(fig, img_directory, str(mjd) + "-cont-notfound")
+        plt.close()
+        raise SpectraException("Continuum not found because of " + str(reason))
     with warnings.catch_warnings():
         warnings.filterwarnings('error')
         try:
             cont_fit = cont_fitter(cont, cont_wave, cont_flux, weights = cont_error ** (-2), maxiter = 10000)
-        except Exception:
+        except Exception as reason:
             save_fig(fig, img_directory, str(mjd) + "-cont-failed")
             plt.close()
-            raise SpectraException("Continuum fit failed")
+            raise SpectraException("Continuum fit failed because of " + str(reason))
     plt.plot(wave, cont_fit(wave))
     save_fig(fig, img_directory, str(mjd) + "-cont-success")
     plt.close()
@@ -62,10 +67,10 @@ def template_fit(wave, flux, error, rmid, mjd):
         warnings.filterwarnings('error')
         try:
             fit = fitter(hbeta_complex_fit_func, wave, flux, weights = error ** (-2), maxiter = 3000)
-        except Exception:
+        except Exception as reason:
             save_fig(fig1, img_directory, str(mjd) + "-failed")
             plt.close()
-            raise SpectraException("Fit failed")
+            raise SpectraException("Fit failed because of " + str(reason))
     expected = np.array(fit(wave))
     plt.plot(wave, expected)
     save_fig(fig1, img_directory, str(mjd) + "-succeed")
@@ -137,5 +142,5 @@ def fe_fitter(rmid):
     pool.join()
     print("Finished\n\n")
 
-fe_fitter(1141)
 
+fe_fitter(1141)
