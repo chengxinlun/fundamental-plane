@@ -1,9 +1,6 @@
-import math
 import os
 import numpy as np
 import pickle
-from scipy.integrate import quad
-from scipy.stats import chisquare
 import matplotlib.pylab as plt
 from astropy.modeling import models, fitting
 import warnings
@@ -133,7 +130,7 @@ def fe_fitter_single(rmid, lock, mjd):
 def fe_fitter(rmid):
     print("Beginning process for " + str(rmid))
     mjd_list = map(int, os.listdir(Location.project_loca + "data/raw/" + str(rmid)))
-    pool = Pool(processes = 4)
+    pool = Pool(processes = 32)
     m = Manager()
     lock = m.Lock()
     f = partial(fe_fitter_single, rmid, lock)
