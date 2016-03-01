@@ -1,9 +1,12 @@
 import pickle
+import os
 import numpy as np
 from fe_temp_observed import FeII_template_obs
 from astropy.modeling import models
 import matplotlib.pyplot as plt
 from position import Location
+from functools import partial
+from multiprocessing import Manager, Pool
 
 
 class FileNotFound(Exception):
@@ -44,7 +47,7 @@ def calc_flux(res):
     x = np.linspace(4000.0, 5500.0, 100000)
     fe2_flux = np.trapz(fe2_func(x), x)
     hbetan_flux = np.sqrt(2.0 * np.pi) * abs(res[8]) * res[6]
-    hbetab_flux = np.sqrt(2.0 * np.pi) * abs(res[10]) * res[11]
+    hbetab_flux = np.sqrt(2.0 * np.pi) * abs(res[11]) * res[9]
     return [fe2_flux, hbetan_flux, hbetab_flux]
 
 
@@ -57,21 +60,41 @@ def output_flux(rmid, dic, band):
 
 # Integrate line for specified rmid in mjd
 def line_integration_single(rmid, lock, fe2dic, hbetandic, hbetabdic, mjd):
+    res = []
     try:
-        res = read_fit_res(rmid, mjd)
+        res = read_fit_res(rmid, mjd, "Fe2")
     except FileNotFound:
         lock.acquire()
         print("Fit file not found: " + str(rmid) + " " + str(mjd))
         lock.release()
+        return
     [fe2, hbetan, hbetab] = calc_flux(res)
     fe2dic[mjd] = fe2
-    hbetan[mjd] = hbetan
-    hbetab[mjd] = hbetab
+    hbetandic[mjd] = hbetan
+    hbetabdic[mjd] = hbetab
 
 
 def line_integration(rmid):
-    fe2dic = dict()
-    hbetandic = dict()
-    hbetabdic = dict()
     print("Begin process for " + str(rmid))
     mjd_list = map(int, os.listdir(Location.project_loca + "data/raw/" + str(rmid)))
+    pool = Pool(processes = 4)
+    m = Manager()
+    lock = m.Lock()
+    fe2dic = m.dict()
+    hbetandic = m.dict()
+    hbetabdic = m.dict()
+    func = partial(line_integration_single, rmid, lock, fe2dic, hbetandic, hbetabdic)
+    pool.map(func, mjd_list)
+    output_flux(rmid, fe2dic, "Fe2")
+    output_flux(rmid, hbetandic, "Hbetan")
+    output_flux(rmid, hbetabdic, "Hbetab")
+    pool.close()
+    pool.join()
+
+a = dict()
+b = dict()
+c = dict()
+line_integration_single(1141, Manager().Lock(), a, b, c, 56722)
+print(a)
+print(b)
+print(c)
