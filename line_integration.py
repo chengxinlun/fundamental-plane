@@ -91,10 +91,4 @@ def line_integration(rmid):
     pool.close()
     pool.join()
 
-a = dict()
-b = dict()
-c = dict()
-line_integration_single(1141, Manager().Lock(), a, b, c, 56722)
-print(a)
-print(b)
-print(c)
+line_integration(1141)

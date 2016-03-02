@@ -53,8 +53,8 @@ def template_fit(wave, flux, error, rmid, mjd):
     plt.plot(wave, flux)
     hbeta_complex_fit_func = \
             fe_temp_observed.FeII_template_obs(6.2, 2000.0, 2.6, 6.2, 2000.0, 2.6) + \
-            models.Gaussian1D(3.6, 4853.30, 7.0, bounds = {"amplitude": [0.0, 50.0], "mean": [4830, 4873], "stddev": [0.0, 23.8]}) + \
-            models.Gaussian1D(3.6, 4853.30, 40.0, bounds = {"amplitude": [0.0, 50.0], "mean": [4830, 4873], "stddev": [23.8, 500.0]}) + \
+            models.Gaussian1D(3.6, 4853.30, 7.0, bounds = {"amplitude": [0.0, 50.0], "mean": [4830, 4880], "stddev": [0.0, 10.1]}) + \
+            models.Gaussian1D(3.6, 4853.30, 40.0, bounds = {"amplitude": [0.0, 50.0], "mean": [4830, 4880], "stddev": [10.1, 500.0]}) + \
             models.Gaussian1D(2.0, 4346.40, 2.0, bounds = {"amplitude": [0.0, 50.0], "mean": [4323, 4369], "stddev": [0.0, 50.0]}) + \
             models.Gaussian1D(2.0, 4101.73, 2.0, bounds = {"amplitude": [0.0, 50.0], "mean": [4078, 4125], "stddev": [0.0, 50.0]}) + \
             models.Gaussian1D(5.0, 4960.0, 6.0, bounds = {"amplitude": [0.0, 50.0], "mean": [4937, 4983], "stddev": [0.0, 23.8]}) + \
@@ -130,7 +130,7 @@ def fe_fitter_single(rmid, lock, mjd):
 def fe_fitter(rmid):
     print("Beginning process for " + str(rmid))
     mjd_list = map(int, os.listdir(Location.project_loca + "data/raw/" + str(rmid)))
-    pool = Pool(processes = 32)
+    pool = Pool(processes = 4)
     m = Manager()
     lock = m.Lock()
     f = partial(fe_fitter_single, rmid, lock)
