@@ -68,6 +68,8 @@ def template_fit(wave, flux, error, rmid, mjd):
             save_fig(fig1, img_directory, str(mjd) + "-failed")
             plt.close()
             raise SpectraException("Fit failed because of " + str(reason))
+    if fit.parameters[0] < 0.0 or fit.parameters[3] < 0.0:
+        raise SpectraException("Fit failed because of intensity of FeII < 0")
     expected = np.array(fit(wave))
     plt.plot(wave, expected)
     save_fig(fig1, img_directory, str(mjd) + "-succeed")
@@ -117,7 +119,7 @@ def fe_fitter_single(rmid, lock, mjd):
     except SpectraException as reason:
         lock.acquire()
         exception_logging(rmid, mjd, reason)
-        print("Failed")
+        print("Failed for " + str(rmid))
         lock.release()
         return
     output_fit(fit_res, rmid, mjd, "Fe2")

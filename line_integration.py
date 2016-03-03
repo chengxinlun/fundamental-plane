@@ -90,5 +90,3 @@ def line_integration(rmid):
     output_flux(rmid, hbetabdic, "Hbetab")
     pool.close()
     pool.join()
-
-line_integration(1141)
