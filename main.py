@@ -25,3 +25,5 @@ def fit_all():
     rmid_list = get_total_rmid_list()
     for each in rmid_list:
         fe_fitter(each)
+
+fe_fitter(909)
