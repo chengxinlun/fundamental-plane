@@ -85,8 +85,13 @@ def line_integration(rmid):
     hbetabdic = m.dict()
     func = partial(line_integration_single, rmid, lock, fe2dic, hbetandic, hbetabdic)
     pool.map(func, mjd_list)
+    print(fe2dic)
+    print(hbetandic)
+    print(hbetabdic)
     output_flux(rmid, fe2dic, "Fe2")
     output_flux(rmid, hbetandic, "Hbetan")
     output_flux(rmid, hbetabdic, "Hbetab")
     pool.close()
     pool.join()
+
+line_integration(1141)
