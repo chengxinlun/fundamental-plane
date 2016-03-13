@@ -52,7 +52,7 @@ def template_fit(wave, flux, error, rmid, mjd):
     fig1 = plt.figure()
     plt.plot(wave, flux)
     hbeta_complex_fit_func = \
-            fe_temp_observed.FeII_template_obs(6.2, 2000.0, 2.6, 6.2, 2000.0, 2.6) + \
+            fe_temp_observed.FeII_template_obs(0.0, 2000.0, 2.6, 0.0, 2000.0, 2.6) + \
             models.Gaussian1D(3.6, 4853.30, 7.0, bounds = {"amplitude": [0.0, 50.0], "mean": [4830, 4880], "stddev": [0.0, 10.1]}) + \
             models.Gaussian1D(3.6, 4853.30, 40.0, bounds = {"amplitude": [0.0, 50.0], "mean": [4830, 4880], "stddev": [10.1, 500.0]}) + \
             models.Gaussian1D(2.0, 4346.40, 2.0, bounds = {"amplitude": [0.0, 50.0], "mean": [4323, 4369], "stddev": [0.0, 50.0]}) + \
@@ -68,8 +68,10 @@ def template_fit(wave, flux, error, rmid, mjd):
             save_fig(fig1, img_directory, str(mjd) + "-failed")
             plt.close()
             raise SpectraException("Fit failed because of " + str(reason))
-    if fit.parameters[0] < 0.0 or fit.parameters[3] < 0.0:
-        raise SpectraException("Fit failed because of intensity of FeII < 0")
+    #if fit.parameters[2] < 0.0 or fit.parameters[5] < 0.0:
+    #    save_fig(fig1, img_directory, str(mjd) + "-failed")
+    #    plt.close()
+    #    raise SpectraException("Fit failed because of intensity of FeII < 0")
     expected = np.array(fit(wave))
     plt.plot(wave, expected)
     save_fig(fig1, img_directory, str(mjd) + "-succeed")
