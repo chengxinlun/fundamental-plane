@@ -34,7 +34,7 @@ def read_fit_res(rmid, mjd, band):
 
 
 # Integrate to get flux
-def calc_flux(res):
+def calc_flux(res, cont_res):
     # Separate the parameter and construct integrating function
     fe2_func = FeII_template_obs(
         res[0],
@@ -43,12 +43,14 @@ def calc_flux(res):
         res[3],
         res[4],
         res[5])
+    cont_func = models.PowerLaw1D(cont_res[0], cont_res[1], cont_res[2])
     # Integrate to get flux
     x = np.linspace(4000.0, 5500.0, 100000)
     fe2_flux = np.trapz(fe2_func(x), x)
+    cont_flux = cont_func(5100.0)
     hbetan_flux = np.sqrt(2.0 * np.pi) * abs(res[8]) * res[6]
     hbetab_flux = np.sqrt(2.0 * np.pi) * abs(res[11]) * res[9]
-    return [fe2_flux, hbetan_flux, hbetab_flux]
+    return [fe2_flux, hbetan_flux, hbetab_flux, cont_flux]
 
 
 # Output calculation result
@@ -59,7 +61,7 @@ def output_flux(rmid, dic, band):
 
 
 # Integrate line for specified rmid in mjd
-def line_integration_single(rmid, lock, fe2dic, hbetandic, hbetabdic, mjd):
+def line_integration_single(rmid, lock, fe2dic, hbetandic, hbetabdic, contdic, mjd):
     res = []
     try:
         res = read_fit_res(rmid, mjd, "Fe2")
@@ -68,10 +70,18 @@ def line_integration_single(rmid, lock, fe2dic, hbetandic, hbetabdic, mjd):
         print("Fit file not found: " + str(rmid) + " " + str(mjd))
         lock.release()
         return
-    [fe2, hbetan, hbetab] = calc_flux(res)
+    try:
+        cont_res = read_fit_res(rmid, mjd, "cont")
+    except FileNotFound:
+        lock.acquire()
+        print("Continuum file not found: " + str(rmid) + " " + str(mjd))
+        lock.release()
+        return
+    [fe2, hbetan, hbetab, cont] = calc_flux(res, cont_res)
     fe2dic[mjd] = fe2
     hbetandic[mjd] = hbetan
     hbetabdic[mjd] = hbetab
+    contdic[mjd] = cont
 
 
 def line_integration(rmid):
@@ -83,7 +93,8 @@ def line_integration(rmid):
     fe2dic = m.dict()
     hbetandic = m.dict()
     hbetabdic = m.dict()
-    func = partial(line_integration_single, rmid, lock, fe2dic, hbetandic, hbetabdic)
+    contdic = m.dict()
+    func = partial(line_integration_single, rmid, lock, fe2dic, hbetandic, hbetabdic, contdic)
     pool.map(func, mjd_list)
     output_flux(rmid, dict(fe2dic), "Fe2")
     output_flux(rmid, dict(hbetandic), "Hbetan")

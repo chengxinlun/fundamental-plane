@@ -3,6 +3,7 @@ from base import get_total_rmid_list
 from raw_reader import raw_reader
 from multiprocessing import Pool
 from fe_fitter import fe_fitter
+from line_integration import line_integration
 
 
 def task_splitter(task, num_thread):
@@ -26,4 +27,9 @@ def fit_all():
     for each in rmid_list:
         fe_fitter(each)
 
-fe_fitter(909)
+def init_all():
+    rmid_list = get_total_rmid_list()
+    for each in rmid_list:
+        line_integration(rmid)
+
+line_integration(909)
