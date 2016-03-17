@@ -46,6 +46,8 @@ def template_fit(wave, flux, error, rmid, mjd):
             raise SpectraException("Continuum fit failed because of " + str(reason))
     plt.plot(wave, cont_fit(wave))
     save_fig(fig, img_directory, str(mjd) + "-cont-success")
+    print(cont_fit.fit_info)
+    input()
     plt.close()
     # Fit emission lines
     flux = flux - cont_fit(wave)
