@@ -32,4 +32,4 @@ def init_all():
     for each in rmid_list:
         line_integration(rmid)
 
-line_integration(909)
+fe_fitter(1141)
