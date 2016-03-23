@@ -3,12 +3,11 @@ import numpy as np
 from base import read_raw_data, mask_points, extract_fit_part, read_database
 from fe_temp_observed import FeII_template_obs
 from position import Location
-import time
 
 
 def get_error(center, width, wave, flux, error):
     [wavea, fluxa, errora] = extract_fit_part(wave, flux, error, center - 2.0 * width, center + 2.0 * width)
-    re = np.sum((errora ** 2) / (wavea ** 2))
+    re = np.sum((errora ** 2) / (fluxa ** 2))
     return np.sqrt(re)
 
 
