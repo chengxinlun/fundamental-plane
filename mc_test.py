@@ -11,7 +11,7 @@ def noise_gene(flux, error):
     for i in range(len(error)):
         noise.append(np.random.normal(flux[i], error[i], 100))
     noise = np.array(noise)
-    noise = np.tile(flux, [100, 1]) + np.transpose(noise)
+    noise = np.transpose(noise)
     return noise
 
 
