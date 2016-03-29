@@ -39,7 +39,7 @@ def template_fit(wave, flux, error, rmid, mjd):
     with warnings.catch_warnings():
         warnings.filterwarnings('error')
         try:
-            cont_fit = cont_fitter(cont, cont_wave, cont_flux, weights = cont_error ** (-2), maxiter = 10000)
+            cont_fit = cont_fitter(cont, cont_wave, cont_flux, weights = cont_error ** (-2), maxiter = 1000000)
         except Exception as reason:
             save_fig(fig, img_directory, str(mjd) + "-cont-failed")
             plt.close()
@@ -53,17 +53,17 @@ def template_fit(wave, flux, error, rmid, mjd):
     plt.plot(wave, flux)
     hbeta_complex_fit_func = \
             fe_temp_observed.FeII_template_obs(0.0, 2000.0, 2.6, 0.0, 2000.0, 2.6) + \
-            models.Gaussian1D(3.6, 4853.30, 7.0, bounds = {"amplitude": [0.0, 50.0], "mean": [4830, 4880], "stddev": [0.0, 10.1]}) + \
+            models.Gaussian1D(3.6, 4853.30, 7.0, bounds = {"amplitude": [0.0, 50.0], "mean": [4830, 4880], "stddev": [0.0001, 10.1]}) + \
             models.Gaussian1D(3.6, 4853.30, 40.0, bounds = {"amplitude": [0.0, 50.0], "mean": [4830, 4880], "stddev": [10.1, 500.0]}) + \
-            models.Gaussian1D(2.0, 4346.40, 2.0, bounds = {"amplitude": [0.0, 50.0], "mean": [4323, 4369], "stddev": [0.0, 50.0]}) + \
-            models.Gaussian1D(2.0, 4101.73, 2.0, bounds = {"amplitude": [0.0, 50.0], "mean": [4078, 4125], "stddev": [0.0, 50.0]}) + \
-            models.Gaussian1D(5.0, 4960.0, 6.0, bounds = {"amplitude": [0.0, 50.0], "mean": [4937, 4983], "stddev": [0.0, 23.8]}) + \
-            models.Gaussian1D(20.0, 5008.0, 6.0, bounds = {"amplitude": [0.0, 50.0], "mean": [4985, 5031], "stddev": [0.0, 23.8]})
+            models.Gaussian1D(2.0, 4346.40, 2.0, bounds = {"amplitude": [0.0, 50.0], "mean": [4323, 4369], "stddev": [0.0001, 50.0]}) + \
+            models.Gaussian1D(2.0, 4101.73, 2.0, bounds = {"amplitude": [0.0, 50.0], "mean": [4078, 4125], "stddev": [0.0001, 50.0]}) + \
+            models.Gaussian1D(5.0, 4960.0, 6.0, bounds = {"amplitude": [0.0, 50.0], "mean": [4937, 4983], "stddev": [0.0001, 23.8]}) + \
+            models.Gaussian1D(20.0, 5008.0, 6.0, bounds = {"amplitude": [0.0, 50.0], "mean": [4985, 5031], "stddev": [0.0001, 23.8]})
     fitter = fitting.LevMarLSQFitter()
     with warnings.catch_warnings():
         warnings.filterwarnings('error')
         try:
-            fit = fitter(hbeta_complex_fit_func, wave, flux, weights = error ** (-2), maxiter = 3000)
+            fit = fitter(hbeta_complex_fit_func, wave, flux, weights = error ** (-2), maxiter = 3000000)
         except Exception as reason:
             save_fig(fig1, img_directory, str(mjd) + "-failed")
             plt.close()
@@ -72,6 +72,9 @@ def template_fit(wave, flux, error, rmid, mjd):
     #    save_fig(fig1, img_directory, str(mjd) + "-failed")
     #    plt.close()
     #    raise SpectraException("Fit failed because of intensity of FeII < 0")
+    a = open(Location.project_loca+"fit_info.pkl", "wb")
+    pickle.dump(fitter.fit_info, a)
+    a.close()
     expected = np.array(fit(wave))
     plt.plot(wave, expected)
     save_fig(fig1, img_directory, str(mjd) + "-succeed")
@@ -79,7 +82,7 @@ def template_fit(wave, flux, error, rmid, mjd):
     rcs = 0
     for i in range(len(flux)):
         rcs = rcs + (flux[i] - expected[i]) ** 2.0
-    rcs = rcs / np.abs(len(flux)-17)
+    rcs = rcs / np.abs(len(flux)-23)
     if rcs > 10.0:
         raise SpectraException("Reduced chi-square too large: " + str(rcs))
     return fit.parameters, cont_fit.parameters, rcs
@@ -96,6 +99,13 @@ def output_fit(fit_result, rmid, mjd, band):
 def exception_logging(rmid, mjd, reason):
     log = open(Location.project_loca + "Fe2_fit_error.log", "a")
     log.write(str(rmid) + " " + str(mjd) + " " + str(reason) + "\n")
+    log.close()
+
+
+# Reduced chisquare logging
+def rcs_logging(rmid, mjd, rcs):
+    log = open(Location.project_loca + "result/fit_with_temp/rcs.txt", "a")
+    log.write(str(rmid) + " " + str(mjd) + " " + str(rcs) + "\n")
     log.close()
 
 
@@ -121,12 +131,13 @@ def fe_fitter_single(rmid, lock, mjd):
     except SpectraException as reason:
         lock.acquire()
         exception_logging(rmid, mjd, reason)
-        print("Failed for " + str(rmid))
+        print("Failed for " + str(mjd))
         lock.release()
         return
     output_fit(fit_res, rmid, mjd, "Fe2")
     output_fit(cont_res, rmid, mjd, "cont")
     lock.acquire()
+    rcs_logging(rmid, mjd, rcs)
     print("Finished for " + str(mjd))
     lock.release()
 
@@ -134,7 +145,7 @@ def fe_fitter_single(rmid, lock, mjd):
 def fe_fitter(rmid):
     print("Beginning process for " + str(rmid))
     mjd_list = map(int, os.listdir(Location.project_loca + "data/raw/" + str(rmid)))
-    pool = Pool(processes = 4)
+    pool = Pool(processes = 32)
     m = Manager()
     lock = m.Lock()
     f = partial(fe_fitter_single, rmid, lock)
