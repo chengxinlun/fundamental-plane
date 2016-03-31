@@ -5,9 +5,8 @@ import matplotlib.pylab as plt
 from astropy.modeling import models, fitting
 import warnings
 import fe_temp_observed
-from base import read_raw_data, get_total_rmid_list, mask_points, check_line, extract_fit_part, save_fig
+from base import read_raw_data, mask_points, extract_fit_part, save_fig
 from position import Location
-import time
 from multiprocessing import Pool, Manager
 from functools import partial
 
@@ -20,7 +19,8 @@ class SpectraException(Exception):
 
 # Function to fit quasar with the template
 def template_fit(wave, flux, error, rmid, mjd):
-    img_directory = Location.project_loca + "result/fit_with_temp/fig/" + str(rmid)
+    img_directory = Location.project_loca + "result/fit_with_temp/fig/" + \
+        str(rmid)
     # Fit continuum
     fig = plt.figure()
     plt.plot(wave, flux)
@@ -43,7 +43,8 @@ def template_fit(wave, flux, error, rmid, mjd):
         except Exception as reason:
             save_fig(fig, img_directory, str(mjd) + "-cont-failed")
             plt.close()
-            raise SpectraException("Continuum fit failed because of " + str(reason))
+            raise SpectraException("Continuum fit failed because of " +
+                                   str(reason))
     plt.plot(wave, cont_fit(wave))
     save_fig(fig, img_directory, str(mjd) + "-cont-success")
     plt.close()
@@ -68,10 +69,6 @@ def template_fit(wave, flux, error, rmid, mjd):
             save_fig(fig1, img_directory, str(mjd) + "-failed")
             plt.close()
             raise SpectraException("Fit failed because of " + str(reason))
-    #if fit.parameters[2] < 0.0 or fit.parameters[5] < 0.0:
-    #    save_fig(fig1, img_directory, str(mjd) + "-failed")
-    #    plt.close()
-    #    raise SpectraException("Fit failed because of intensity of FeII < 0")
     a = open(Location.project_loca+"fit_info.pkl", "wb")
     pickle.dump(fitter.fit_info, a)
     a.close()
@@ -90,7 +87,8 @@ def template_fit(wave, flux, error, rmid, mjd):
 
 # Function to output fit result
 def output_fit(fit_result, rmid, mjd, band):
-    picklefile = open(Location.project_loca + "result/fit_with_temp/data/" + str(rmid) + "/" + str(mjd) + "-" + band + ".pkl", "wb")
+    picklefile = open(Location.project_loca + "result/fit_with_temp/data/" +\
+                      str(rmid) + "/" + str(mjd) + "-" + band + ".pkl", "wb")
     pickle.dump(fit_result, picklefile)
     picklefile.close()
 
@@ -103,14 +101,14 @@ def exception_logging(rmid, mjd, reason):
 
 
 # Reduced chisquare logging
-def rcs_logging(rmid, mjd, rcs):
-    log = open(Location.project_loca + "result/fit_with_temp/rcs.txt", "a")
-    log.write(str(rmid) + " " + str(mjd) + " " + str(rcs) + "\n")
+def rcs_logging(rmid, rcs):
+    log = open(Location.project_loca + "result/fit_with_temp/data/" + str(rmid) + "/rcs.pkl", "wb")
+    pickle.dump(rcs, log)
     log.close()
 
 
 # Individual working process
-def fe_fitter_single(rmid, lock, mjd):
+def fe_fitter_single(rmid, lock, rcs_dict, mjd):
     # Read data and preprocessing
     [wave, flux, error] = read_raw_data(rmid, mjd)
     [wave, flux, error] = mask_points(wave, flux,  error)
@@ -137,7 +135,7 @@ def fe_fitter_single(rmid, lock, mjd):
     output_fit(fit_res, rmid, mjd, "Fe2")
     output_fit(cont_res, rmid, mjd, "cont")
     lock.acquire()
-    rcs_logging(rmid, mjd, rcs)
+    rcs_dict[mjd] = rcs
     print("Finished for " + str(mjd))
     lock.release()
 
@@ -148,8 +146,10 @@ def fe_fitter(rmid):
     pool = Pool(processes = 32)
     m = Manager()
     lock = m.Lock()
-    f = partial(fe_fitter_single, rmid, lock)
+    rcs_dict = m.dict()
+    f = partial(fe_fitter_single, rmid, lock, rcs_dict)
     pool.map(f, mjd_list)
+    rcs_logging(rmid, dict(rcs_dict))
     pool.close()
     pool.join()
     print("Finished\n\n")
