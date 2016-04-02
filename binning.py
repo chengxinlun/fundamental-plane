@@ -74,12 +74,10 @@ def binning(rmid):
         os.mkdir(str(rmid))
     except OSError:
         pass
-    pool = Pool(processes = 4)
+    pool = Pool(processes = 32)
     m = Manager()
     l = m.Lock()
     func = partial(binning_single, rmid, l)
     pool.map(func, mjd_list)
     pool.close()
     pool.join()
-
-binning(909)

@@ -1,6 +1,8 @@
 import os
 import numpy as np
 import pickle
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pylab as plt
 from astropy.modeling import models, fitting
 import warnings
@@ -69,9 +71,6 @@ def template_fit(wave, flux, error, rmid, mjd):
             save_fig(fig1, img_directory, str(mjd) + "-failed")
             plt.close()
             raise SpectraException("Fit failed because of " + str(reason))
-    a = open(Location.project_loca+"fit_info.pkl", "wb")
-    pickle.dump(fitter.fit_info, a)
-    a.close()
     expected = np.array(fit(wave))
     plt.plot(wave, expected)
     save_fig(fig1, img_directory, str(mjd) + "-succeed")

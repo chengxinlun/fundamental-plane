@@ -6,17 +6,23 @@ from position import Location
 
 
 def get_error(center, width, wave, flux, error):
-    [wavea, fluxa, errora] = extract_fit_part(wave, flux, error, center - 2.0 * width, center + 2.0 * width)
+    [wavea, fluxa, errora] = extract_fit_part(wave, flux, error,
+                                              center - 2.0 * width,
+                                              center + 2.0 * width)
     re = np.sum((errora ** 2) / (fluxa ** 2))
     return np.sqrt(re)
 
 
 def estimate_error_single(rmid, hbetab_dic, hbetan_dic, o3_dic, fe2_dic, mjd):
     [wave, flux, error] = read_raw_data(rmid, mjd)
+    error = pickle.load(open(Location.project_loca + "data/raw/" + str(rmid) +
+                             "/" + str(mjd) + "/" + "error_scaled.pkl", "rb"))
     [wave, flux, error] = extract_fit_part(wave, flux, error, 4000.0, 5500.0)
     [wave, flux, error] = mask_points(wave, flux, error)
-    res = read_database(Location.project_loca + "result/fit_with_temp/data/" + str(rmid) + "/" + str(mjd) + "-Fe2.pkl")
-    fe_temp = np.vectorize(FeII_template_obs(res[0], res[1], res[2], res[3], res[4], res[5]))
+    res = read_database(Location.project_loca + "result/fit_with_temp/data/" +
+                        str(rmid) + "/" + str(mjd) + "-Fe2.pkl")
+    fe_temp = np.vectorize(FeII_template_obs(res[0], res[1], res[2], res[3],
+                                             res[4], res[5]))
     flux_fe = fe_temp(wave)
     flux_no_fe = flux - flux_fe
     hbetab_re = get_error(res[10], res[11], wave, flux_no_fe, error)
@@ -27,6 +33,7 @@ def estimate_error_single(rmid, hbetab_dic, hbetan_dic, o3_dic, fe2_dic, mjd):
     hbetan_dic[mjd] = hbetan_re
     o3_dic[mjd] = o3_re
     fe2_dic[mjd] = fe2_re
+
 
 hb = dict()
 hn = dict()
