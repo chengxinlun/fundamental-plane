@@ -8,6 +8,7 @@ from position import Location
 from base import read_raw_data, mask_points
 
 
+# Binning adjacent points into one
 def binning_point(wave, flux, error):
     new_wave_list = []
     new_error_list = []
@@ -18,15 +19,19 @@ def binning_point(wave, flux, error):
         new_flux = np.sum(flux_with_error)
         new_error_list.append(np.mean(flux_with_error))
         new_wave_list.append(np.sum(flux_with_error * wave) / new_flux)
-    return [np.mean(new_wave_list), np.mean(new_error_list), np.std(new_error_list)]
+    return [np.mean(new_wave_list), np.mean(new_error_list),
+            np.std(new_error_list)]
 
 
+# Output the binning result
 def output(rmid, mjd, data, name):
-    f = open(Location.project_loca + "data/binned/" + str(rmid) + "/" + str(mjd) + "/" + name + ".pkl", "wb")
+    f = open(Location.project_loca + "data/binned/" + str(rmid) + "/" +
+             str(mjd) + "/" + name + ".pkl", "wb")
     pickle.dump(data, f)
     f.close()
 
 
+# Do binning for specified rmid and mjd (5 to 1)
 def binning_single(rmid, lock, mjd):
     lock.acquire()
     print("Begin for " + str(mjd))
@@ -61,9 +66,11 @@ def binning_single(rmid, lock, mjd):
     lock.release()
 
 
+# Interface
 def binning(rmid):
     print("Beginning process for " + str(rmid))
-    mjd_list = map(int, os.listdir(Location.project_loca + "data/raw/" + str(rmid)))
+    mjd_list = map(int, os.listdir(Location.project_loca + "data/raw/" +
+                                   str(rmid)))
     os.chdir(Location.project_loca + "data/")
     try:
         os.mkdir("binned")
@@ -74,7 +81,7 @@ def binning(rmid):
         os.mkdir(str(rmid))
     except OSError:
         pass
-    pool = Pool(processes = 32)
+    pool = Pool(processes=32)
     m = Manager()
     l = m.Lock()
     func = partial(binning_single, rmid, l)

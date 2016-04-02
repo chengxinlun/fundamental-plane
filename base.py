@@ -65,8 +65,8 @@ def check_line(wave, wave_line):
         return True
     else:
         return False
-                                    
-                                    
+
+
 # Function to extract part of the spectra to fit
 def extract_fit_part(wave, flux, error, min_wave, max_wave):
     wave_fit = list()

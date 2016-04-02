@@ -5,6 +5,7 @@ from functools import partial
 from multiprocessing import Manager, Pool
 
 
+# Read in the reduced chisquare from the fitting
 def read_rcs(rmid):
     f = open(Location.project_loca + "result/fit_with_temp/data/" + str(rmid) +
              "/rcs.pkl")
@@ -13,6 +14,7 @@ def read_rcs(rmid):
     return rcs_dict
 
 
+# Rescale the error for a specified rmid and mjd
 def error_scaling_single(lock, rcs_dict, rmid, mjd):
     [wave, flux, error] = read_raw_data(rmid, int(mjd))
     error = error * rcs_dict[mjd]
@@ -24,9 +26,10 @@ def error_scaling_single(lock, rcs_dict, rmid, mjd):
     lock.release()
 
 
+# Interface
 def error_scaling(rmid):
     rcs_dict = read_rcs(rmid)
-    p = Pool(processes = 32)
+    p = Pool(processes=32)
     m = Manager()
     l = m.Lock()
     func = partial(error_scaling_single, l, rcs_dict, rmid)

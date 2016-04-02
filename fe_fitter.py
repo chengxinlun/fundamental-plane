@@ -2,7 +2,7 @@ import os
 import numpy as np
 import pickle
 import matplotlib
-matplotlib.use('Agg')
+matplotlib.use('Agg')  # Disable X11
 import matplotlib.pylab as plt
 from astropy.modeling import models, fitting
 import warnings

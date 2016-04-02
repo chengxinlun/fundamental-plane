@@ -3,7 +3,6 @@ import os
 import numpy as np
 from fe_temp_observed import FeII_template_obs
 from astropy.modeling import models
-import matplotlib.pyplot as plt
 from position import Location
 from functools import partial
 from multiprocessing import Manager, Pool
@@ -55,13 +54,15 @@ def calc_flux(res, cont_res):
 
 # Output calculation result
 def output_flux(rmid, dic, band):
-    fileout = open(Location.project_loca + "result/flux_of_line/" + str(rmid) + "/" + str(band) + ".pkl", "wb")
+    fileout = open(Location.project_loca + "result/flux_of_line/" + str(rmid) +
+                   "/" + str(band) + ".pkl", "wb")
     pickle.dump(dic, fileout)
     fileout.close()
 
 
 # Integrate line for specified rmid in mjd
-def line_integration_single(rmid, lock, fe2dic, hbetandic, hbetabdic, contdic, mjd):
+def line_integration_single(rmid, lock, fe2dic, hbetandic, hbetabdic, contdic,
+                            mjd):
     res = []
     try:
         res = read_fit_res(rmid, mjd, "Fe2")
@@ -84,24 +85,23 @@ def line_integration_single(rmid, lock, fe2dic, hbetandic, hbetabdic, contdic, m
     contdic[mjd] = cont
 
 
+# Interface
 def line_integration(rmid):
     print("Begin process for " + str(rmid))
-    mjd_list = map(int, os.listdir(Location.project_loca + "data/raw/" + str(rmid)))
-    pool = Pool(processes = 32)
+    mjd_list = map(int, os.listdir(Location.project_loca + "data/raw/" +
+                                   str(rmid)))
+    pool = Pool(processes=32)
     m = Manager()
     lock = m.Lock()
     fe2dic = m.dict()
     hbetandic = m.dict()
     hbetabdic = m.dict()
     contdic = m.dict()
-    func = partial(line_integration_single, rmid, lock, fe2dic, hbetandic, hbetabdic, contdic)
+    func = partial(line_integration_single, rmid, lock, fe2dic, hbetandic,
+                   hbetabdic, contdic)
     pool.map(func, mjd_list)
     output_flux(rmid, dict(fe2dic), "Fe2")
     output_flux(rmid, dict(hbetandic), "Hbetan")
     output_flux(rmid, dict(hbetabdic), "Hbetab")
-    print(hbetandic)
-    print(hbetabdic)
-    print(fe2dic)
-    print(contdic)
     pool.close()
     pool.join()
