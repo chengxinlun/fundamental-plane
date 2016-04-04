@@ -1,8 +1,10 @@
 # Just run this file to get the result
 from base import get_total_rmid_list
-from raw_reader import raw_reader
-from multiprocessing import Pool
+#from raw_reader import raw_reader
 from fe_fitter import fe_fitter
+from line_integration import line_integration
+from error_scaling import error_scaling
+from binning import binning
 
 
 def task_splitter(task, num_thread):
@@ -14,14 +16,31 @@ def task_splitter(task, num_thread):
     return splitted
 
 
-def read_all_raw_data():
-    rmid_list = get_total_rmid_list()
-    # Multiprocess data reading
-    workers = Pool(processes = 4)
-    workers.map(raw_reader, rmid_list)
-
 
 def fit_all():
     rmid_list = get_total_rmid_list()
+    for i in range(0, len(rmid_list)):
+        fe_fitter(rmid_list[i])
+        print(str(i + 1) + "out of " + str(len(rmid_list)))
+        print("\n\n")
+
+
+def inte_all():
+    rmid_list = get_total_rmid_list()
     for each in rmid_list:
-        fe_fitter(each)
+        line_integration(each)
+
+
+def bin_all():
+    rmid_list = get_total_rmid_list()
+    for each in rmid_list:
+        binning(each)
+
+
+def rescale_all():
+    rmid_list = get_total_rmid_list()
+    for each in rmid_list:
+        error_scaling(each)
+
+
+rescale_all()

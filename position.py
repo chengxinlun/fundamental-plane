@@ -3,5 +3,5 @@
 
 class Location:
     # Location of the project root
-    project_loca = "/home/cheng/astrophy/programming/fundmental-plane/"
+    project_loca = "/home/xlcheng/fundmental-plane/"
 
