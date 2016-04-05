@@ -3,6 +3,7 @@ import numpy as np
 from base import read_raw_data, mask_points, extract_fit_part, read_database
 from fe_temp_observed import FeII_template_obs
 from position import Location
+from functools import partial
 
 
 def get_error(center, width, wave, flux, error):
@@ -35,12 +36,11 @@ def estimate_error_single(rmid, hbetab_dic, hbetan_dic, o3_dic, fe2_dic, mjd):
     fe2_dic[mjd] = fe2_re
 
 
-hb = dict()
-hn = dict()
-o3 = dict()
-fe2 = dict()
-estimate_error_single(1141, hb, hn, o3, fe2, 56660)
-print(hb)
-print(hn)
-print(o3)
-print(fe2)
+def error_estimate(rmid):
+    p = Pool(processes=32)
+    m = Manager()
+    hb = m.dict()
+    hn = m.dict()
+    o3 = m.dict()
+    fe2 = m.dict()
+    func = partial(estimate_error_single, rmid, hb, hn, o3, fe2)
