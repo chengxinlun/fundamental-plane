@@ -42,7 +42,6 @@ def estimate_error_single(rmid, hbetab_dic, hbetan_dic, o3_dic, fe2_dic, mjd):
                              "/" + str(mjd) + "/" + "error_scaled.pkl", "rb"))
     [wave, flux, error] = extract_fit_part(wave, flux, error, 4000.0, 5500.0)
     [wave, flux, error] = mask_points(wave, flux, error)
-    print(error)
     try:
         res = read_database(Location.project_loca +
                             "result/fit_with_temp/data/" +
@@ -52,6 +51,7 @@ def estimate_error_single(rmid, hbetab_dic, hbetan_dic, o3_dic, fe2_dic, mjd):
     fe_temp = np.vectorize(FeII_template_obs(res[0], res[1], res[2], res[3],
                                              res[4], res[5]))
     flux_fe = fe_temp(wave)
+    print(flux_fe)
     flux_no_fe = flux - flux_fe
     hbetab_re = get_error(res[10], res[11], wave, flux_no_fe, error)
     hbetan_re = get_error(res[7], res[8], wave, flux_no_fe, error)
