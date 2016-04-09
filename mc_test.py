@@ -1,10 +1,12 @@
-import os
 import numpy as np
+import pickle
 from fe_fitter import template_fit
 from base import read_raw_data, mask_points, extract_fit_part
 from line_integration import calc_flux
 from multiprocessing import Pool, Manager
 from functools import partial
+from position import Location
+
 
 def noise_gene(flux, error):
     noise = list()
@@ -26,13 +28,15 @@ def get_flux(wave, rmid, mjd, fit_res, args):
 
 def mc_test_single(rmid, mjd):
     [wave, flux, error] = read_raw_data(rmid, mjd)
+    error = pickle.load(open(Location.project_loca + "data/raw/" + str(rmid) +
+                             "/" + str(mjd) + "/" + "error_scaled.pkl", "rb"))
     [wave, flux, error] = mask_points(wave, flux, error)
     [wave, flux, error] = extract_fit_part(wave, flux, error, 4000.0, 5500.0)
     flux_with_noise = noise_gene(flux, error)
     error_with_noise = np.tile(error, [100, 1])
     num_list = list(range(100))
     m = Manager()
-    p = Pool(processes = 100)
+    p = Pool(processes=100)
     fit_res = m.list()
     func = partial(get_flux, wave, rmid, mjd, fit_res)
     args = list()
@@ -42,8 +46,11 @@ def mc_test_single(rmid, mjd):
     p.close()
     res = np.transpose(np.array(list(fit_res)))
     std_res = list()
+    mean_res = list()
     for each in res:
         std_res.append(np.std(each))
+        mean_res.append(np.mean(each))
     print(std_res)
+    print(mean_res)
 
-mc_test_single(1141,56660)
+mc_test_single(1141, 56660)
