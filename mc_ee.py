@@ -1,8 +1,9 @@
+import os
 import numpy as np
 import pickle
 from fe_fitter import template_fit
 from base import read_raw_data, mask_points, extract_fit_part
-from line_integration import calc_flux
+from line_integration import calc_flux, output_flux
 from multiprocessing import Pool, Manager
 from functools import partial
 from position import Location
@@ -21,12 +22,17 @@ def get_flux(wave, rmid, mjd, fit_res, args):
     flux = args[0]
     error = args[1]
     num = args[2]
-    res = template_fit(wave, flux, error, rmid, str(mjd) + "-" + str(num))
+    try:
+        res = template_fit(wave, flux, error, False, rmid, str(mjd) + "-" +
+                           str(num))
+    except Exception:
+        return
     line_flux = calc_flux(res[0], res[1])
     fit_res.append(line_flux)
 
 
-def mc_test_single(rmid, mjd):
+def mc_ee_single(rmid, mjd):
+    print("    Begin for " + str(mjd))
     [wave, flux, error] = read_raw_data(rmid, mjd)
     error = pickle.load(open(Location.project_loca + "data/raw/" + str(rmid) +
                              "/" + str(mjd) + "/" + "error_scaled.pkl", "rb"))
@@ -50,5 +56,35 @@ def mc_test_single(rmid, mjd):
     for each in res:
         std_res.append(np.std(each))
         mean_res.append(np.mean(each))
-    print(std_res)
-    print(mean_res)
+    return [std_res, mean_res]
+
+
+def mc_ee(rmid):
+    print("Begin mc error estimation for " + str(rmid))
+    mjd_list = map(int, os.listdir(Location.project_loca + "data/raw/" +
+                                   str(rmid)))
+    fe2edic = dict()
+    hbetabedic = dict()
+    hbetanedic = dict()
+    o3edic = dict()
+    contedic = dict()
+    for each in mjd_list:
+        [std_res, mean_res] = mc_ee_single(rmid, each)
+        fe2edic[each] = std_res[0] / mean_res[0]
+        hbetabedic[each] = std_res[1] / mean_res[1]
+        hbetanedic[each] = std_res[2] / mean_res[2]
+        o3edic[each] = std_res[3] / mean_res[3]
+        contedic[each] = std_res[4] / mean_res[4]
+    output_flux(rmid, fe2edic, "Fe2_error")
+    output_flux(rmid, hbetabedic, "Hbetab_error")
+    output_flux(rmid, hbetanedic, "Hbetan_error")
+    output_flux(rmid, o3edic, "O3_error")
+    output_flux(rmid, contedic, "cont_error")
+    print(fe2edic)
+    print(hbetabedic)
+    print(hbetanedic)
+    print(o3edic)
+    print(contedic)
+    print("Finished \n\n")
+
+mc_ee(1141)

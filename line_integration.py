@@ -49,7 +49,8 @@ def calc_flux(res, cont_res):
     cont_flux = cont_func(5100.0)
     hbetan_flux = np.sqrt(2.0 * np.pi) * abs(res[8]) * res[6]
     hbetab_flux = np.sqrt(2.0 * np.pi) * abs(res[11]) * res[9]
-    return [fe2_flux, hbetan_flux, hbetab_flux, cont_flux]
+    o3_flux = np.sqrt(2.0 * np.pi) * abs(res[23]) * res[21]
+    return [fe2_flux, hbetan_flux, hbetab_flux, o3_flux, cont_flux]
 
 
 # Output calculation result
@@ -61,8 +62,8 @@ def output_flux(rmid, dic, band):
 
 
 # Integrate line for specified rmid in mjd
-def line_integration_single(rmid, lock, fe2dic, hbetandic, hbetabdic, contdic,
-                            mjd):
+def line_integration_single(rmid, lock, fe2dic, hbetandic, hbetabdic, o3dic,
+                            contdic, mjd):
     res = []
     try:
         res = read_fit_res(rmid, mjd, "Fe2")
@@ -78,10 +79,11 @@ def line_integration_single(rmid, lock, fe2dic, hbetandic, hbetabdic, contdic,
         print("Continuum file not found: " + str(rmid) + " " + str(mjd))
         lock.release()
         return
-    [fe2, hbetan, hbetab, cont] = calc_flux(res, cont_res)
+    [fe2, hbetan, hbetab, o3, cont] = calc_flux(res, cont_res)
     fe2dic[mjd] = fe2
     hbetandic[mjd] = hbetan
     hbetabdic[mjd] = hbetab
+    o3dic[mjd] = o3
     contdic[mjd] = cont
 
 
@@ -96,12 +98,14 @@ def line_integration(rmid):
     fe2dic = m.dict()
     hbetandic = m.dict()
     hbetabdic = m.dict()
+    o3dic = m.dict()
     contdic = m.dict()
     func = partial(line_integration_single, rmid, lock, fe2dic, hbetandic,
-                   hbetabdic, contdic)
+                   hbetabdic, o3dic, contdic)
     pool.map(func, mjd_list)
     output_flux(rmid, dict(fe2dic), "Fe2")
     output_flux(rmid, dict(hbetandic), "Hbetan")
     output_flux(rmid, dict(hbetabdic), "Hbetab")
+    output_flux(rmid, dict(o3dic), "O3")
     pool.close()
     pool.join()
