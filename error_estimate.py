@@ -52,9 +52,9 @@ def estimate_error_single(rmid, hbetab_dic, hbetan_dic, o3_dic, fe2_dic, mjd):
     fe_temp = np.vectorize(FeII_template_obs(res[0], res[1], res[2], res[3],
                                              res[4], res[5]))
     flux_fe = fe_temp(wave)
-    f = open("fe2.txt")
-    for each in flux_fe:
-        print(str(each)+"\n")
+    f = open("fe2.txt", "w")
+    for i in range(len(flux_fe)):
+        f.write(str(flux_fe[i])+" "+str(error[i])+" "+str(wave[i])+"\n")
     f.close()
     flux_no_fe = flux - flux_fe
     hbetab_re = get_error(res[10], res[11], wave, flux_no_fe, error)
