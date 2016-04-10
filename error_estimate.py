@@ -7,7 +7,6 @@ from fe_temp_observed import FeII_template_obs
 from position import Location
 from functools import partial
 from multiprocessing import Manager, Pool
-import matplotlib.pyplot as plt
 
 
 def get_error(center, width, wave, flux, error):
@@ -29,6 +28,7 @@ def get_fe2_re(fit_res, wave, flux, error):
         line_list.append([each - 2.0 * width_n3 * each, each + 2.0 * width_n3 *
                          each])
     total_line = union(line_list)
+    print(total_line)
     re = 0.0
     for each in total_line:
         temp = get_error(np.mean(each), (each[1] - each[0]) * 0.25, wave, flux,
@@ -52,9 +52,10 @@ def estimate_error_single(rmid, hbetab_dic, hbetan_dic, o3_dic, fe2_dic, mjd):
     fe_temp = np.vectorize(FeII_template_obs(res[0], res[1], res[2], res[3],
                                              res[4], res[5]))
     flux_fe = fe_temp(wave)
-    fig = plt.figure()
-    plt.errorbar(wave, flux_fe, yerr=error)
-    fig.savefig("1141-56660-FeII.svg")
+    f = open("fe2.txt")
+    for each in flux_fe:
+        print(str(each)+"\n")
+    f.close()
     flux_no_fe = flux - flux_fe
     hbetab_re = get_error(res[10], res[11], wave, flux_no_fe, error)
     hbetan_re = get_error(res[7], res[8], wave, flux_no_fe, error)
