@@ -20,12 +20,13 @@ class SpectraException(Exception):
 
 
 # Function to fit quasar with the template
-def template_fit(wave, flux, error, rmid, mjd):
+def template_fit(wave, flux, error, image_control, rmid, mjd):
     img_directory = Location.project_loca + "result/fit_with_temp/fig/" + \
         str(rmid)
     # Fit continuum
-    fig = plt.figure()
-    plt.plot(wave, flux)
+    if image_control:  # Control image output
+        fig = plt.figure()
+        plt.plot(wave, flux)
     [cont_wave, cont_flux, cont_error] = extract_fit_part(wave, flux, error, 4040, 4060)
     [temp_wave, temp_flux, temp_error] = extract_fit_part(wave, flux, error, 5080, 5100)
     cont_wave = np.append(cont_wave, temp_wave)
@@ -35,25 +36,29 @@ def template_fit(wave, flux, error, rmid, mjd):
     try:
         cont = models.PowerLaw1D(cont_flux[0], cont_wave[0], - np.log(cont_flux[-1]/cont_flux[0]) / np.log(cont_wave[-1]/cont_wave[0]), fixed = {"x_0": True})
     except Exception as reason:
-        save_fig(fig, img_directory, str(mjd) + "-cont-notfound")
-        plt.close()
+        if image_control:  # Control image output
+            save_fig(fig, img_directory, str(mjd) + "-cont-notfound")
+            plt.close()
         raise SpectraException("Continuum not found because of " + str(reason))
     with warnings.catch_warnings():
         warnings.filterwarnings('error')
         try:
             cont_fit = cont_fitter(cont, cont_wave, cont_flux, weights = cont_error ** (-2), maxiter = 1000000)
         except Exception as reason:
-            save_fig(fig, img_directory, str(mjd) + "-cont-failed")
-            plt.close()
+            if image_control:  # Control image output
+                save_fig(fig, img_directory, str(mjd) + "-cont-failed")
+                plt.close()
             raise SpectraException("Continuum fit failed because of " +
                                    str(reason))
-    plt.plot(wave, cont_fit(wave))
-    save_fig(fig, img_directory, str(mjd) + "-cont-success")
-    plt.close()
+    if image_control:  # Control image output
+        plt.plot(wave, cont_fit(wave))
+        save_fig(fig, img_directory, str(mjd) + "-cont-success")
+        plt.close()
     # Fit emission lines
     flux = flux - cont_fit(wave)
-    fig1 = plt.figure()
-    plt.plot(wave, flux)
+    if image_control:  # Control image output
+        fig1 = plt.figure()
+        plt.plot(wave, flux)
     hbeta_complex_fit_func = \
             fe_temp_observed.FeII_template_obs(0.0, 2000.0, 2.6, 0.0, 2000.0, 2.6) + \
             models.Gaussian1D(3.6, 4853.30, 7.0, bounds = {"amplitude": [0.0, 50.0], "mean": [4830, 4880], "stddev": [0.0001, 10.1]}) + \
@@ -68,13 +73,15 @@ def template_fit(wave, flux, error, rmid, mjd):
         try:
             fit = fitter(hbeta_complex_fit_func, wave, flux, weights = error ** (-2), maxiter = 3000000)
         except Exception as reason:
-            save_fig(fig1, img_directory, str(mjd) + "-failed")
-            plt.close()
+            if image_control:  # Control image output
+                save_fig(fig1, img_directory, str(mjd) + "-failed")
+                plt.close()
             raise SpectraException("Fit failed because of " + str(reason))
     expected = np.array(fit(wave))
-    plt.plot(wave, expected)
-    save_fig(fig1, img_directory, str(mjd) + "-succeed")
-    plt.close()
+    if image_control:  # Control image output
+        plt.plot(wave, expected)
+        save_fig(fig1, img_directory, str(mjd) + "-succeed")
+        plt.close()
     rcs = 0
     for i in range(len(flux)):
         rcs = rcs + (flux[i] - expected[i]) ** 2.0
@@ -124,7 +131,7 @@ def fe_fitter_single(rmid, lock, rcs_dict, mjd):
         pass
     # Begin fitting and handling exception
     try:
-        [fit_res, cont_res, rcs] = template_fit(wave, flux, error, rmid, mjd)
+        [fit_res, cont_res, rcs] = template_fit(wave, flux, error, True, rmid, mjd)
     except SpectraException as reason:
         lock.acquire()
         exception_logging(rmid, mjd, reason)

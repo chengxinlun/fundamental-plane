@@ -52,5 +52,3 @@ def mc_test_single(rmid, mjd):
         mean_res.append(np.mean(each))
     print(std_res)
     print(mean_res)
-
-mc_test_single(1141, 56660)
