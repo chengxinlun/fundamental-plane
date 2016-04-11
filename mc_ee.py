@@ -33,11 +33,17 @@ def get_flux(wave, rmid, mjd, fit_res, args):
 
 def mc_ee_single(rmid, mjd):
     print("    Begin for " + str(mjd))
-    [wave, flux, error] = read_raw_data(rmid, mjd)
-    error = pickle.load(open(Location.project_loca + "data/raw/" + str(rmid) +
-                             "/" + str(mjd) + "/" + "error_scaled.pkl", "rb"))
-    [wave, flux, error] = mask_points(wave, flux, error)
-    [wave, flux, error] = extract_fit_part(wave, flux, error, 4000.0, 5500.0)
+    try:
+        [wave, flux, error] = read_raw_data(rmid, mjd)
+        error = pickle.load(open(Location.project_loca + "data/raw/" +
+                                 str(rmid) + "/" + str(mjd) + "/" +
+                                 "error_scaled.pkl", "rb"))
+        [wave, flux, error] = mask_points(wave, flux, error)
+        [wave, flux, error] = extract_fit_part(wave, flux, error, 4000.0,
+                                               5500.0)
+    except Exception:
+        print("        Unable to locate data file.")
+        return [[], []]
     flux_with_noise = noise_gene(flux, error)
     error_with_noise = np.tile(error, [100, 1])
     num_list = list(range(100))
@@ -70,11 +76,26 @@ def mc_ee(rmid):
     contedic = dict()
     for each in mjd_list:
         [std_res, mean_res] = mc_ee_single(rmid, each)
-        fe2edic[each] = std_res[0] / mean_res[0]
-        hbetabedic[each] = std_res[1] / mean_res[1]
-        hbetanedic[each] = std_res[2] / mean_res[2]
-        o3edic[each] = std_res[3] / mean_res[3]
-        contedic[each] = std_res[4] / mean_res[4]
+        try:
+            fe2edic[each] = std_res[0] / mean_res[0]
+        except Exception:
+            pass
+        try:
+            hbetanedic[each] = std_res[1] / mean_res[1]
+        except Exception:
+            pass
+        try:
+            hbetabedic[each] = std_res[2] / mean_res[2]
+        except Exception:
+            pass
+        try:
+            o3edic[each] = std_res[3] / mean_res[3]
+        except Exception:
+            pass
+        try:
+            contedic[each] = std_res[4] / mean_res[4]
+        except Exception:
+            pass
     output_flux(rmid, fe2edic, "Fe2_error")
     output_flux(rmid, hbetabedic, "Hbetab_error")
     output_flux(rmid, hbetanedic, "Hbetan_error")
@@ -86,5 +107,6 @@ def mc_ee(rmid):
     print(o3edic)
     print(contedic)
     print("Finished \n\n")
+
 
 mc_ee(1141)

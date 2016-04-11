@@ -106,6 +106,7 @@ def line_integration(rmid):
     output_flux(rmid, dict(fe2dic), "Fe2")
     output_flux(rmid, dict(hbetandic), "Hbetan")
     output_flux(rmid, dict(hbetabdic), "Hbetab")
+    output_flux(rmid, dict(contdic), "cont")
     output_flux(rmid, dict(o3dic), "O3")
     pool.close()
     pool.join()
