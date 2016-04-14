@@ -101,12 +101,4 @@ def mc_ee(rmid):
     output_flux(rmid, hbetanedic, "Hbetan_error")
     output_flux(rmid, o3edic, "O3_error")
     output_flux(rmid, contedic, "cont_error")
-    print(fe2edic)
-    print(hbetabedic)
-    print(hbetanedic)
-    print(o3edic)
-    print(contedic)
     print("Finished \n\n")
-
-
-mc_ee(1141)

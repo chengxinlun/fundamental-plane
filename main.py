@@ -1,11 +1,11 @@
 # Just run this file to get the result
 from base import get_total_rmid_list
-#from raw_reader import raw_reader
+# from raw_reader import raw_reader
 from fe_fitter import fe_fitter
 from line_integration import line_integration
 from error_scaling import error_scaling
 from binning import binning
-
+from mc_ee import mc_ee
 
 def task_splitter(task, num_thread):
     num_per_thread = int(len(task) / num_thread)
@@ -14,7 +14,6 @@ def task_splitter(task, num_thread):
         splitted[i] = task[i * num_per_thread: (i + 1) * num_per_thread]
     splitted[num_thread - 1] = task[(num_thread - 1) * num_per_thread: -1]
     return splitted
-
 
 
 def fit_all():
@@ -43,4 +42,10 @@ def rescale_all():
         error_scaling(each)
 
 
-rescale_all()
+def error_estimation_all():
+    rmid_list = get_total_rmid_list()
+    for each in rmid_list:
+        mc_ee(each)
+
+
+error_estimation_all()

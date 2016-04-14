@@ -43,7 +43,7 @@ def template_fit(wave, flux, error, image_control, rmid, mjd):
     with warnings.catch_warnings():
         warnings.filterwarnings('error')
         try:
-            cont_fit = cont_fitter(cont, cont_wave, cont_flux, weights = cont_error ** (-2), maxiter = 1000000)
+            cont_fit = cont_fitter(cont, cont_wave, cont_flux, weights = cont_error ** (-2), maxiter = 10000)
         except Exception as reason:
             if image_control:  # Control image output
                 save_fig(fig, img_directory, str(mjd) + "-cont-failed")
@@ -71,7 +71,7 @@ def template_fit(wave, flux, error, image_control, rmid, mjd):
     with warnings.catch_warnings():
         warnings.filterwarnings('error')
         try:
-            fit = fitter(hbeta_complex_fit_func, wave, flux, weights = error ** (-2), maxiter = 3000000)
+            fit = fitter(hbeta_complex_fit_func, wave, flux, weights = error ** (-2), maxiter = 30000)
         except Exception as reason:
             if image_control:  # Control image output
                 save_fig(fig1, img_directory, str(mjd) + "-failed")
@@ -158,4 +158,3 @@ def fe_fitter(rmid):
     rcs_logging(rmid, dict(rcs_dict))
     pool.close()
     pool.join()
-    print("Finished\n\n")
