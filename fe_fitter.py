@@ -89,7 +89,7 @@ def template_fit(wave, flux, error, image_control, init_value, rmid, mjd):
     with warnings.catch_warnings():
         warnings.filterwarnings('error')
         try:
-            fit = fitter(hbeta_complex_fit_func, wave, flux, weights = error ** (-2), maxiter = 3000000)
+            fit = fitter(hbeta_complex_fit_func, wave, flux, weights = error ** (-2), maxiter = 300000)
         except Exception as reason:
             if image_control:  # Control image output
                 save_fig(fig1, img_directory, str(mjd) + "-failed")
@@ -149,7 +149,8 @@ def fe_fitter_single(rmid, lock, rcs_dict, mjd):
         pass
     # Begin fitting and handling exception
     try:
-        [fit_res, cont_res, rcs] = template_fit(wave, flux, error, True, rmid, mjd)
+        [fit_res, cont_res, rcs] = template_fit(wave, flux, error, True, [],
+                                                rmid, mjd)
     except SpectraException as reason:
         lock.acquire()
         exception_logging(rmid, mjd, reason)
@@ -162,7 +163,6 @@ def fe_fitter_single(rmid, lock, rcs_dict, mjd):
     rcs_dict[mjd] = rcs
     print("Finished for " + str(mjd))
     lock.release()
-
 
 
 def fe_fitter(rmid):
