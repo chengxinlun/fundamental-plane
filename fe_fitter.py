@@ -72,19 +72,24 @@ def template_fit(wave, flux, error, image_control, init_value, rmid, mjd):
             models.Gaussian1D(5.0, 4960.0, 6.0, bounds = {"amplitude": [0.0, 50.0], "mean": [4937, 4983], "stddev": [0.0001, 23.8]}) + \
             models.Gaussian1D(20.0, 5008.0, 6.0, bounds = {"amplitude": [0.0, 50.0], "mean": [4985, 5031], "stddev": [0.0001, 23.8]})
     else:
+        fe2_param = init_value[1][0:6]
+        hbetan_param = init_value[1][6:9]
+        hbetab_param = init_value[1][9:12]
+        hother_param = init_value[1][12:18]
+        o3_param = init_value[1][18:24]
         hbeta_complex_fit_func = \
-            fe_temp_observed.FeII_template_obs() + \
-                    models.Gaussian1D(3.6, 4853.30, 7.0, bounds = {"amplitude": [0.0, 50.0], "mean": [4830, 4880], "stddev": [0.0001, 10.1]}) + \
-                    models.Gaussian1D(3.6, 4853.30, 40.0, bounds = {"amplitude": [0.0, 50.0], "mean": [4830, 4880], "stddev": [10.1, 500.0]}) + \
-                    models.Gaussian1D(2.0, 4346.40, 2.0, bounds = {"amplitude": [0.0, 50.0], "mean": [4323, 4369], "stddev": [0.0001, 50.0]}) + \
-                    models.Gaussian1D(2.0, 4101.73, 2.0, bounds = {"amplitude": [0.0, 50.0], "mean": [4078, 4125], "stddev": [0.0001, 50.0]}) + \
-                    models.Gaussian1D(5.0, 4960.0, 6.0, bounds = {"amplitude": [0.0, 50.0], "mean": [4937, 4983], "stddev": [0.0001, 23.8]}) + \
-                    models.Gaussian1D(20.0, 5008.0, 6.0, bounds = {"amplitude": [0.0, 50.0], "mean": [4985, 5031], "stddev": [0.0001, 23.8]})
+            fe_temp_observed.FeII_template_obs(fe2_param[0], fe2_param[1], fe2_param[2], fe2_param[3], fe2_param[4], fe2_param[5]) + \
+                    models.Gaussian1D(hbetan_param[0], hbetan_param[1], hbetan_param[2], bounds = {"amplitude": [0.0, 50.0], "mean": [4830, 4880], "stddev": [0.0001, 10.1]}) + \
+                    models.Gaussian1D(hbetab_param[0], hbetab_param[1], hbetab_param[2], bounds = {"amplitude": [0.0, 50.0], "mean": [4830, 4880], "stddev": [10.1, 500.0]}) + \
+                    models.Gaussian1D(hother_param[0], hother_param[1], hother_param[2], bounds = {"amplitude": [0.0, 50.0], "mean": [4323, 4369], "stddev": [0.0001, 50.0]}) + \
+                    models.Gaussian1D(hother_param[3], hother_param[4], hother_param[5], bounds = {"amplitude": [0.0, 50.0], "mean": [4078, 4125], "stddev": [0.0001, 50.0]}) + \
+                    models.Gaussian1D(o3_param[0], o3_param[1], o3_param[2], bounds = {"amplitude": [0.0, 50.0], "mean": [4937, 4983], "stddev": [0.0001, 23.8]}) + \
+                    models.Gaussian1D(o3_param[3], o3_param[4], o3_param[5], bounds = {"amplitude": [0.0, 50.0], "mean": [4985, 5031], "stddev": [0.0001, 23.8]})
     fitter = fitting.LevMarLSQFitter()
     with warnings.catch_warnings():
         warnings.filterwarnings('error')
         try:
-            fit = fitter(hbeta_complex_fit_func, wave, flux, weights = error ** (-2), maxiter = 3000000)
+            fit = fitter(hbeta_complex_fit_func, wave, flux, weights = error ** (-2), maxiter = 300000)
         except Exception as reason:
             if image_control:  # Control image output
                 save_fig(fig1, img_directory, str(mjd) + "-failed")
