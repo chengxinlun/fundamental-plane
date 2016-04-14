@@ -149,7 +149,8 @@ def fe_fitter_single(rmid, lock, rcs_dict, mjd):
         pass
     # Begin fitting and handling exception
     try:
-        [fit_res, cont_res, rcs] = template_fit(wave, flux, error, True, rmid, mjd)
+        [fit_res, cont_res, rcs] = template_fit(wave, flux, error, True, [],
+                                                rmid, mjd)
     except SpectraException as reason:
         lock.acquire()
         exception_logging(rmid, mjd, reason)
@@ -162,7 +163,6 @@ def fe_fitter_single(rmid, lock, rcs_dict, mjd):
     rcs_dict[mjd] = rcs
     print("Finished for " + str(mjd))
     lock.release()
-
 
 
 def fe_fitter(rmid):
