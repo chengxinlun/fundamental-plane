@@ -106,7 +106,7 @@ def template_fit(wave, flux, error, image_control, init_value, rmid, mjd):
     rcs = rcs / np.abs(len(flux)-23)
     if rcs > 10.0:
         raise SpectraException("Reduced chi-square too large: " + str(rcs))
-    return fit.parameters, cont_fit.parameters, rcs
+    return fit.parameters, cont_fit.parameters, rcs, cont_fitter.fit_info['nfev'], fitter.fit_info['nfev']
 
 
 # Function to output fit result

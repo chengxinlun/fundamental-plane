@@ -19,7 +19,7 @@ def noise_gene(flux, error):
     return noise
 
 
-def get_flux_ori(wave, rmid, mjd, fit_res, args):
+def get_flux(wave, rmid, mjd, fit_res, args):
     flux = args[0]
     error = args[1]
     num = args[2]
@@ -29,16 +29,17 @@ def get_flux_ori(wave, rmid, mjd, fit_res, args):
     fit_result = pickle.load(open(Location.project_loca +
                                   "result/fit_with_temp/data/" + str(rmid) +
                                   "/" + str(mjd) + "-Fe2.pkl", "rb"))
-    #try:
-    res = template_fit(wave, flux, error, False, [cont_result, fit_result],
-                           rmid, str(mjd) + "-" + str(num))
-    #except Exception:
-    #    return
+    init = [cont_result, fit_result]
+    try:
+        res = template_fit(wave, flux, error, True, init, rmid, str(mjd) +
+                           "-" + str(num))
+    except Exception:
+        return
     line_flux = calc_flux(res[0], res[1])
     fit_res.append(line_flux)
 
 
-def mc_ee_single_ori(rmid, mjd):
+def mc_ee_single(rmid, mjd):
     print("    Begin for " + str(mjd))
     try:
         [wave, flux, error] = read_raw_data(rmid, mjd)
@@ -57,7 +58,7 @@ def mc_ee_single_ori(rmid, mjd):
     m = Manager()
     p = Pool(processes=100)
     fit_res = m.list()
-    func = partial(get_flux_ori, wave, rmid, mjd, fit_res)
+    func = partial(get_flux, wave, rmid, mjd, fit_res)
     args = list()
     for i in range(len(flux_with_noise)):
         args.append([flux_with_noise[i], error_with_noise[i], num_list[i]])
@@ -72,7 +73,7 @@ def mc_ee_single_ori(rmid, mjd):
     return [std_res, mean_res]
 
 
-def mc_ee_ori(rmid):
+def mc_ee(rmid):
     print("Begin mc error estimation for " + str(rmid))
     mjd_list = map(int, os.listdir(Location.project_loca + "data/raw/" +
                                    str(rmid)))
@@ -82,7 +83,7 @@ def mc_ee_ori(rmid):
     o3edic = dict()
     contedic = dict()
     for each in mjd_list:
-        [std_res, mean_res] = mc_ee_single_ori(rmid, each)
+        [std_res, mean_res] = mc_ee_single(rmid, each)
         try:
             fe2edic[each] = std_res[0] / mean_res[0]
         except Exception:
@@ -112,5 +113,5 @@ def mc_ee_ori(rmid):
 
 
 t = time.time()
-print(mc_ee_single_ori(1141, 56660))
+mc_ee_single(1141, 56669)
 print(time.time()-t)
