@@ -1,4 +1,5 @@
 import os
+import time
 import numpy as np
 import pickle
 from fe_fitter import template_fit
@@ -22,9 +23,16 @@ def get_flux(wave, rmid, mjd, fit_res, args):
     flux = args[0]
     error = args[1]
     num = args[2]
+    cont_result = pickle.load(open(Location.project_loca +
+                                   "result/fit_with_temp/data/" + str(rmid) +
+                                   "/" + str(mjd) + "-cont.pkl", "rb"))
+    fit_result = pickle.load(open(Location.project_loca +
+                                  "result/fit_with_temp/data/" + str(rmid) +
+                                  "/" + str(mjd) + "-Fe2.pkl", "rb"))
+    init = [cont_result, fit_result]
     try:
-        res = template_fit(wave, flux, error, False, rmid, str(mjd) + "-" +
-                           str(num))
+        res = template_fit(wave, flux, error, True, init, rmid, str(mjd) +
+                           "-" + str(num))
     except Exception:
         return
     line_flux = calc_flux(res[0], res[1])
@@ -102,3 +110,8 @@ def mc_ee(rmid):
     output_flux(rmid, o3edic, "O3_error")
     output_flux(rmid, contedic, "cont_error")
     print("Finished \n\n")
+
+
+t = time.time()
+mc_ee_single(1141, 56669)
+print(time.time()-t)
