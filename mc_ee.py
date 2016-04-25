@@ -31,7 +31,7 @@ def get_flux(wave, rmid, mjd, fit_res, args):
                                   "/" + str(mjd) + "-Fe2.pkl", "rb"))
     init = [cont_result, fit_result]
     try:
-        res = template_fit(wave, flux, error, True, init, rmid, str(mjd) +
+        res = template_fit(wave, flux, error, False, init, rmid, str(mjd) +
                            "-" + str(num))
     except Exception:
         return
@@ -75,6 +75,7 @@ def mc_ee_single(rmid, mjd):
 
 def mc_ee(rmid):
     print("Begin mc error estimation for " + str(rmid))
+    start_t = time.time()
     mjd_list = map(int, os.listdir(Location.project_loca + "data/raw/" +
                                    str(rmid)))
     fe2edic = dict()
@@ -109,9 +110,5 @@ def mc_ee(rmid):
     output_flux(rmid, hbetanedic, "Hbetan_error")
     output_flux(rmid, o3edic, "O3_error")
     output_flux(rmid, contedic, "cont_error")
+    print("Time elapsed: " + str(time.time()-start_t) + " seconds")
     print("Finished \n\n")
-
-
-t = time.time()
-mc_ee_single(1141, 56669)
-print(time.time()-t)

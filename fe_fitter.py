@@ -27,26 +27,20 @@ def template_fit(wave, flux, error, image_control, init_value, rmid, mjd):
     if image_control:  # Control image output
         fig = plt.figure()
         plt.plot(wave, flux)
-    [cont_wave, cont_flux, cont_error] = extract_fit_part(wave, flux, error, 4040, 4060)
-    [temp_wave, temp_flux, temp_error] = extract_fit_part(wave, flux, error, 5080, 5100)
-    cont_wave = np.append(cont_wave, temp_wave)
-    cont_flux = np.append(cont_flux, temp_flux)
-    cont_error = np.append(cont_error, temp_error)
     cont_fitter = fitting.LevMarLSQFitter()
-    try:
-        if init_value == []:
-            cont = models.PowerLaw1D(cont_flux[0], cont_wave[0], - np.log(cont_flux[-1]/cont_flux[0]) / np.log(cont_wave[-1]/cont_wave[0]), fixed = {"x_0": True})
-        else:
-            cont = models.PowerLaw1D(init_value[0][0], init_value[0][1], init_value[0][2], fixed = {"x_0": True})
-    except Exception as reason:
-        if image_control:  # Control image output
-            save_fig(fig, img_directory, str(mjd) + "-cont-notfound")
-            plt.close()
-        raise SpectraException("Continuum not found because of " + str(reason))
+    if init_value == []:
+        cont = fe_temp_observed.FeII_template_obs(0.0, 2000.0, 2.6, 0.0, 2000.0, 2.6) + \
+            models.PowerLaw1D(flux[0], wave[0], - np.log(flux[-1]/flux[0]) / np.log(wave[-1]/wave[0]), fixed = {"x_0": True})
+    else:
+        fe2_param = init_value[1][0:6]
+        cont = fe_temp_observed.FeII_template_obs(fe2_param[0], fe2_param[1],
+                                                  fe2_param[2], fe2_param[3],
+                                                  fe2_param[4], fe2_param[5]) + \
+            models.PowerLaw1D(init_value[0][0], init_value[0][1], init_value[0][2], fixed = {"x_0": True})
     with warnings.catch_warnings():
         warnings.filterwarnings('error')
         try:
-            cont_fit = cont_fitter(cont, cont_wave, cont_flux, weights = cont_error ** (-2), maxiter = 100000)
+            cont_fit = cont_fitter(cont, wave, flux, weights = error ** (-2), maxiter = 10000)
         except Exception as reason:
             if image_control:  # Control image output
                 save_fig(fig, img_directory, str(mjd) + "-cont-failed")
@@ -54,7 +48,13 @@ def template_fit(wave, flux, error, image_control, init_value, rmid, mjd):
             raise SpectraException("Continuum fit failed because of " +
                                    str(reason))
     if image_control:  # Control image output
-        plt.plot(wave, cont_fit(wave))
+        para = cont_fit.parameters[6:9]
+        cont_cont = models.PowerLaw1D(para[0], para[1], para[2])
+        cont_spec = cont_cont(wave)
+        fit_spec = cont_fit(wave)
+        plt.plot(wave, fit_spec)
+        plt.plot(wave, cont_spec)
+        plt.plot(wave, fit_spec - cont_spec)
         save_fig(fig, img_directory, str(mjd) + "-cont-success")
         plt.close()
     # Fit emission lines
@@ -64,7 +64,6 @@ def template_fit(wave, flux, error, image_control, init_value, rmid, mjd):
         plt.plot(wave, flux)
     if init_value == []:
         hbeta_complex_fit_func = \
-            fe_temp_observed.FeII_template_obs(0.0, 2000.0, 2.6, 0.0, 2000.0, 2.6) + \
             models.Gaussian1D(3.6, 4853.30, 7.0, bounds = {"amplitude": [0.0, 50.0], "mean": [4830, 4880], "stddev": [0.0001, 10.1]}) + \
             models.Gaussian1D(3.6, 4853.30, 40.0, bounds = {"amplitude": [0.0, 50.0], "mean": [4830, 4880], "stddev": [10.1, 500.0]}) + \
             models.Gaussian1D(2.0, 4346.40, 2.0, bounds = {"amplitude": [0.0, 50.0], "mean": [4323, 4369], "stddev": [0.0001, 50.0]}) + \
@@ -72,13 +71,11 @@ def template_fit(wave, flux, error, image_control, init_value, rmid, mjd):
             models.Gaussian1D(5.0, 4960.0, 6.0, bounds = {"amplitude": [0.0, 50.0], "mean": [4937, 4983], "stddev": [0.0001, 23.8]}) + \
             models.Gaussian1D(20.0, 5008.0, 6.0, bounds = {"amplitude": [0.0, 50.0], "mean": [4985, 5031], "stddev": [0.0001, 23.8]})
     else:
-        fe2_param = init_value[1][0:6]
         hbetan_param = init_value[1][6:9]
         hbetab_param = init_value[1][9:12]
         hother_param = init_value[1][12:18]
         o3_param = init_value[1][18:24]
         hbeta_complex_fit_func = \
-            fe_temp_observed.FeII_template_obs(fe2_param[0], fe2_param[1], fe2_param[2], fe2_param[3], fe2_param[4], fe2_param[5]) + \
                     models.Gaussian1D(hbetan_param[0], hbetan_param[1], hbetan_param[2], bounds = {"amplitude": [0.0, 50.0], "mean": [4830, 4880], "stddev": [0.0001, 10.1]}) + \
                     models.Gaussian1D(hbetab_param[0], hbetab_param[1], hbetab_param[2], bounds = {"amplitude": [0.0, 50.0], "mean": [4830, 4880], "stddev": [10.1, 500.0]}) + \
                     models.Gaussian1D(hother_param[0], hother_param[1], hother_param[2], bounds = {"amplitude": [0.0, 50.0], "mean": [4323, 4369], "stddev": [0.0001, 50.0]}) + \
@@ -89,7 +86,7 @@ def template_fit(wave, flux, error, image_control, init_value, rmid, mjd):
     with warnings.catch_warnings():
         warnings.filterwarnings('error')
         try:
-            fit = fitter(hbeta_complex_fit_func, wave, flux, weights = error ** (-2), maxiter = 300000)
+            fit = fitter(hbeta_complex_fit_func, wave, flux, weights = error ** (-2), maxiter = 3000)
         except Exception as reason:
             if image_control:  # Control image output
                 save_fig(fig1, img_directory, str(mjd) + "-failed")
