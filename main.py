@@ -1,11 +1,13 @@
 # Just run this file to get the result
 from base import get_total_rmid_list
 # from raw_reader import raw_reader
-from fe_fitter import fe_fitter
+from fe_fitter import fe_fitter, fe_fitter_single
 from line_integration import line_integration
 from error_scaling import error_scaling
 from binning import binning
 from mc_ee import mc_ee
+from multiprocessing import Manager
+
 
 def task_splitter(task, num_thread):
     num_per_thread = int(len(task) / num_thread)
@@ -48,4 +50,14 @@ def error_estimation_all():
         mc_ee(each)
 
 
-error_estimation_all()
+rmid_list = get_total_rmid_list()
+for each in rmid_list:
+    print(each)
+    m = Manager()
+    l = m.Lock()
+    r = dict()
+    try:
+        fe_fitter_single(each, l, r, 56660)
+    except Exception:
+        print("Failed")
+        pass

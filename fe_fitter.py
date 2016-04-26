@@ -27,20 +27,30 @@ def template_fit(wave, flux, error, image_control, init_value, rmid, mjd):
     if image_control:  # Control image output
         fig = plt.figure()
         plt.plot(wave, flux)
+    no_line_part = [[4000.0, 4050.0], [4150.0, 4280.0], [4420, 4750], [5050, 5500]]
+    cont_wave = np.array([])
+    cont_flux = np.array([])
+    cont_error = np.array([])
+    for each_part in no_line_part:
+        [pwave, pflux, perror] = extract_fit_part(wave, flux, error, each_part[0], each_part[1])
+        cont_wave = np.append(cont_wave, pwave)
+        cont_flux = np.append(cont_flux, pflux)
+        cont_error = np.append(cont_error, perror)
     cont_fitter = fitting.LevMarLSQFitter()
     if init_value == []:
-        cont = fe_temp_observed.FeII_template_obs(0.0, 2000.0, 2.6, 0.0, 2000.0, 2.6) + \
+        cont = fe_temp_observed.FeII_template_obs(0.0, 2000.0, 2.6, 0.0, 2000.0, 2.6, bounds = {"i_r_l1": [0.0, 50.0], "i_r_n3": [0.0, 50.0]}) + \
             models.PowerLaw1D(flux[0], wave[0], - np.log(flux[-1]/flux[0]) / np.log(wave[-1]/wave[0]), fixed = {"x_0": True})
     else:
         fe2_param = init_value[1][0:6]
         cont = fe_temp_observed.FeII_template_obs(fe2_param[0], fe2_param[1],
                                                   fe2_param[2], fe2_param[3],
-                                                  fe2_param[4], fe2_param[5]) + \
+                                                  fe2_param[4], fe2_param[5],
+                                                  bounds = {"i_r_l1": [0.0, 50.0], "i_r_n3": [0.0, 50.0]}) + \
             models.PowerLaw1D(init_value[0][0], init_value[0][1], init_value[0][2], fixed = {"x_0": True})
     with warnings.catch_warnings():
         warnings.filterwarnings('error')
         try:
-            cont_fit = cont_fitter(cont, wave, flux, weights = error ** (-2), maxiter = 10000)
+            cont_fit = cont_fitter(cont, cont_wave, cont_flux, weights = cont_error ** (-2), maxiter = 10000)
         except Exception as reason:
             if image_control:  # Control image output
                 save_fig(fig, img_directory, str(mjd) + "-cont-failed")
@@ -146,8 +156,7 @@ def fe_fitter_single(rmid, lock, rcs_dict, mjd):
         pass
     # Begin fitting and handling exception
     try:
-        [fit_res, cont_res, rcs] = template_fit(wave, flux, error, True, [],
-                                                rmid, mjd)
+        [fit_res, cont_res, rcs, numcont, numfit] = template_fit(wave, flux, error, True, [], rmid, mjd)
     except SpectraException as reason:
         lock.acquire()
         exception_logging(rmid, mjd, reason)
@@ -174,3 +183,5 @@ def fe_fitter(rmid):
     rcs_logging(rmid, dict(rcs_dict))
     pool.close()
     pool.join()
+
+
