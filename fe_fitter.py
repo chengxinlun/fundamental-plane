@@ -27,6 +27,7 @@ def template_fit(wave, flux, error, image_control, init_value, rmid, mjd):
     if image_control:  # Control image output
         fig = plt.figure()
         plt.plot(wave, flux)
+    # Part of the spectra without any prominent emission lines
     no_line_part = [[4000.0, 4050.0], [4150.0, 4280.0], [4420, 4750], [5050, 5500]]
     cont_wave = np.array([])
     cont_flux = np.array([])
@@ -113,7 +114,7 @@ def template_fit(wave, flux, error, image_control, init_value, rmid, mjd):
     rcs = rcs / np.abs(len(flux)-23)
     if rcs > 10.0:
         raise SpectraException("Reduced chi-square too large: " + str(rcs))
-    return fit.parameters, cont_fit.parameters, rcs, cont_fitter.fit_info['nfev'], fitter.fit_info['nfev']
+    return np.append(cont_fit.parameters[0:6], fit.parameters), cont_fit.parameters[6:9], rcs, cont_fitter.fit_info['nfev'], fitter.fit_info['nfev']
 
 
 # Function to output fit result
