@@ -142,9 +142,16 @@ def rcs_logging(rmid, rcs):
 # Individual working process
 def fe_fitter_single(rmid, lock, rcs_dict, mjd):
     # Read data and preprocessing
-    [wave, flux, error] = read_raw_data(rmid, mjd)
-    [wave, flux, error] = mask_points(wave, flux,  error)
-    [wave, flux, error] = extract_fit_part(wave, flux, error, 4000.0, 5500.0)
+    try:
+        [wave, flux, error] = read_raw_data(rmid, mjd)
+        [wave, flux, error] = mask_points(wave, flux,  error)
+        [wave, flux, error] = extract_fit_part(wave, flux, error, 4000.0, 5500.0)
+    except Exception as reason:
+        lock.acquire()
+        exception_logging(rmid, mjd, reason)
+        print("Failed for " + str(mjd))
+        lock.release()
+        return
     os.chdir(Location.project_loca + "result/fit_with_temp/data")
     try:
         os.mkdir(str(rmid))
@@ -158,7 +165,7 @@ def fe_fitter_single(rmid, lock, rcs_dict, mjd):
     # Begin fitting and handling exception
     try:
         [fit_res, cont_res, rcs, numcont, numfit] = template_fit(wave, flux, error, True, [], rmid, mjd)
-    except SpectraException as reason:
+    except Exception as reason:
         lock.acquire()
         exception_logging(rmid, mjd, reason)
         print("Failed for " + str(mjd))
@@ -175,6 +182,7 @@ def fe_fitter_single(rmid, lock, rcs_dict, mjd):
 def fe_fitter(rmid):
     print("Beginning process for " + str(rmid))
     mjd_list = map(int, os.listdir(Location.project_loca + "data/raw/" + str(rmid)))
+    print(mjd_list)
     pool = Pool(processes = 32)
     m = Manager()
     lock = m.Lock()
