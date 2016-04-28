@@ -49,9 +49,4 @@ def error_estimation_all():
         mc_ee(each)
 
 
-fit_all()
-print("Fit finished")
-inte_all()
-print("Integrate finished")
-rescale_all()
-print("Rescale finished")
+error_estimation_all()

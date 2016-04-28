@@ -92,6 +92,11 @@ def line_integration(rmid):
     print("Begin process for " + str(rmid))
     mjd_list = map(int, os.listdir(Location.project_loca + "data/raw/" +
                                    str(rmid)))
+    os.chdir(Location.project_loca + "/result/flux_of_line/")
+    try:
+        os.mkdir(str(rmid))
+    except OSError:
+        pass
     pool = Pool(processes=32)
     m = Manager()
     lock = m.Lock()

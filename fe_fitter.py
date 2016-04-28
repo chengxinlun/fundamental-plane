@@ -182,7 +182,6 @@ def fe_fitter_single(rmid, lock, rcs_dict, mjd):
 def fe_fitter(rmid):
     print("Beginning process for " + str(rmid))
     mjd_list = map(int, os.listdir(Location.project_loca + "data/raw/" + str(rmid)))
-    print(mjd_list)
     pool = Pool(processes = 32)
     m = Manager()
     lock = m.Lock()
@@ -192,5 +191,3 @@ def fe_fitter(rmid):
     rcs_logging(rmid, dict(rcs_dict))
     pool.close()
     pool.join()
-
-

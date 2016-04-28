@@ -18,6 +18,5 @@ def read_re(rmid, band):
 def lc_gene(rmid):
     band_list = ["hbeta", "o3", "cont"]
     lc = dict()
-
     for each in band_list:
         lc[each] =
