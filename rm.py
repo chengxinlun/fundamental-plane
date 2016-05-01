@@ -17,6 +17,15 @@ def read_re(rmid, band):
 
 def lc_gene(rmid):
     band_list = ["hbeta", "o3", "cont"]
-    lc = dict()
     for each in band_list:
-        lc[each] =
+        flux = read_flux(rmid, each)
+        error = read_re(rmid, each)
+        all_mjd = list()
+        all_mjd.extend(flux.keys())
+        all_mjd.extend(error.keys())
+        mjd_list = sorted(set(all_mjd))
+        lc = list()
+        err = list()
+        for each_day in mjd_list:
+            lc.append(flux[each])
+            err.append(flux[each] * error[each])
