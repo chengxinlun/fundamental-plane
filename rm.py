@@ -25,10 +25,7 @@ def lc_gene(rmid):
             flux = read_flux(rmid, each)
             error = read_re(rmid, each)
         except Exception:
-<<<<<<< HEAD
-=======
             print("Unable to locate flux or error file. Exiting.")
->>>>>>> a4cdeccbecf5274f813b708dccea195478db6e8f
             return
         all_mjd = list()
         all_mjd.extend(flux.keys())
@@ -37,12 +34,6 @@ def lc_gene(rmid):
         lc_file = open(Location.project_loca + "result/light_curve/" +
                        str(rmid) + "/" + str(each) + ".txt", "w")
         for each_day in mjd_list:
-<<<<<<< HEAD
             lc_file.write(str(each_day) + "    " + str(flux[each]) + "    " +
                           str(flux[each] * error[each]))
         lc_file.close()
-=======
-            lc.append(flux[each])
-            err.append(flux[each] * error[each])
-
->>>>>>> a4cdeccbecf5274f813b708dccea195478db6e8f
