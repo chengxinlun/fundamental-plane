@@ -116,6 +116,3 @@ def mc_ee(rmid):
     output_flux(rmid, contedic, "cont_error")
     print("Time elapsed: " + str(time.time()-start_t) + " seconds")
     print("Finished \n\n")
-
-
-mc_ee(238)

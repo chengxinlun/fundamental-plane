@@ -40,7 +40,7 @@ def template_fit(wave, flux, error, image_control, init_value, rmid, mjd):
     cont_fitter = fitting.LevMarLSQFitter()
     if init_value == []:
         cont = fe_temp_observed.FeII_template_obs(0.0, 2000.0, 2.6, 0.0, 2000.0, 2.6, bounds = {"i_r_l1": [0.0, 50.0], "i_r_n3": [0.0, 50.0]}) + \
-            models.PowerLaw1D(flux[0], wave[0], - np.log(flux[-1]/flux[0]) / np.log(wave[-1]/wave[0]), fixed = {"x_0": True})
+            models.PowerLaw1D(flux[0], wave[0], - np.log(abs(flux[-1]/flux[0])+0.001) / np.log(abs(wave[-1]/wave[0]) + 0.001), fixed = {"x_0": True})
     else:
         fe2_param = init_value[1][0:6]
         cont = fe_temp_observed.FeII_template_obs(fe2_param[0], fe2_param[1],
