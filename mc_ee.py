@@ -23,12 +23,16 @@ def get_flux(wave, rmid, mjd, fit_res, args):
     flux = args[0]
     error = args[1]
     num = args[2]
-    cont_result = pickle.load(open(Location.project_loca +
-                                   "result/fit_with_temp/data/" + str(rmid) +
-                                   "/" + str(mjd) + "-cont.pkl", "rb"))
-    fit_result = pickle.load(open(Location.project_loca +
-                                  "result/fit_with_temp/data/" + str(rmid) +
-                                  "/" + str(mjd) + "-Fe2.pkl", "rb"))
+    try:
+        cont_result = pickle.load(open(Location.project_loca +
+                                       "result/fit_with_temp/data/" +
+                                       str(rmid) + "/" + str(mjd) + "-cont.pkl",
+                                       "rb"))
+        fit_result = pickle.load(open(Location.project_loca +
+                                      "result/fit_with_temp/data/" + str(rmid) +
+                                      "/" + str(mjd) + "-Fe2.pkl", "rb"))
+    except Exception:
+        return
     init = [cont_result, fit_result]
     try:
         res = template_fit(wave, flux, error, False, init, rmid, str(mjd) +
@@ -112,3 +116,6 @@ def mc_ee(rmid):
     output_flux(rmid, contedic, "cont_error")
     print("Time elapsed: " + str(time.time()-start_t) + " seconds")
     print("Finished \n\n")
+
+
+mc_ee(238)
