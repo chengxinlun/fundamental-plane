@@ -1,4 +1,7 @@
 import os
+import numpy as np
+import matplotlib.pyplot as plt
+from astropy.modeling import models, fitting
 import pickle
 from position import Location
 from javelin.zylc import get_data
@@ -51,6 +54,23 @@ def rm_single(rmid, nwalker, nchain, nburn, fig_out):
     cymod.do_mcmc(conthpd=cmod.hpd, threads=10, fchain=data_out,
                   nwalkers=nwalker, nchain=2.0 * nchain, nburn=2.0 * nburn)
     cymod.show_hist(figout=fig_out, figext="png")
+    num = np.histogram(cymod.flatchain[:, 1] / np.log(10.0), 100)
+    err = np.histogram(cymod.flatchain[:, 0] / np.log(10.0), 100)
+    num_func = models.Gaussian1D(max(num[0]), np.mean(num[1]), 1.0)
+    err_func = models.Gaussian1D(max(err[0]), np.mean(err[1]), 1.0)
+    fitter = fitting.LevMarLSQFitter()
+    num_fit = fitter(num_func, num[1], num[0])
+    fig = plt.figure()
+    plt.hist(cymod.flatchain[:, 1] / np.log(10.0), 100)
+    plt.plot(num[1], num_fit(num[1]))
+    fig.savefig(fig_out + "-num.png")
+    num_res = num_fit.parameters
+    err_fit = fitter(err_func, err[1], err[0])
+    fig = plt.figure()
+    plt.hist(cymod.flatchain[:, 0] / np.log(10.0), 100)
+    plt.plot(err[1], num_fit(err[1]))
+    fig.savefig(fig_out + "-err.png")
+    err_res = err_fit.parameters
 
 
 def rm(rmid, nwalker=500, nchain=250, nburn=250, ** kwargs):
@@ -65,13 +85,16 @@ def rm(rmid, nwalker=500, nchain=250, nburn=250, ** kwargs):
         os.mkdir(str(rmid))
     except OSError:
         pass
-    # try:
-    lc_gene(rmid)
-    fig_out = Location.project_loca + "result/light_curve/" + str(rmid) + \
-        "cont-hbeta-"
-    if "outname" in kwargs:
-        fig_out = fig_out + str(kwargs["outname"])
-    rm_single(rmid, nwalker, nchain, nburn, fig_out)
-    print("    Finished")
-    # except Exception as reason:
-    #    print("    Failed because of: " + str(reason))
+    try:
+        lc_gene(rmid)
+        fig_out = Location.project_loca + "result/light_curve/" + str(rmid) + \
+            "/cont-hbeta"
+        if "outname" in kwargs:
+            fig_out = fig_out + "-" + str(kwargs["outname"])
+        rm_single(rmid, nwalker, nchain, nburn, fig_out)
+        print("    Finished")
+    except Exception as reason:
+        print("    Failed because of: " + str(reason))
+
+
+rm(909)
