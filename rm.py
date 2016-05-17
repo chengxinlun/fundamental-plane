@@ -34,8 +34,12 @@ def lc_gene(rmid):
         lc_file = open(Location.project_loca + "result/light_curve/" +
                        str(rmid) + "/" + str(each) + ".txt", "w")
         for each_day in mjd_list:
-            lc_file.write(str(each_day) + "    " + str(flux[each_day]) +
-                          "    " + str(flux[each_day] * error[each_day]) + "\n")
+            try:
+                flux_each = flux[each_day]
+                error_each = flux_each * error[each_day]
+            except Exception:
+                continue
+            lc_file.write(str(each_day) + "    " + str(flux_each) + "    " + str(error_each) + "\n")
         lc_file.close()
 
 
