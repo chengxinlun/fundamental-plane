@@ -50,12 +50,12 @@ def rm_single(rmid, nwalker, nchain, nburn, fig_out):
         "/Hbetab.txt"
     c = get_data([file_con])
     cmod = Cont_Model(c)
-    cmod.do_mcmc(threads=10, nwalkers=nwalker, nchain=nchain, nburn=nburn)
+    cmod.do_mcmc(threads=100, nwalkers=nwalker, nchain=nchain, nburn=nburn)
     cy = get_data([file_con, file_hbeta], names=["Continuum", "Hbeta"])
     cymod = Rmap_Model(cy)
     data_out = Location.project_loca + "result/light_curve/" + str(rmid) + \
         "/cont-hbeta.txt"
-    cymod.do_mcmc(conthpd=cmod.hpd, threads=10, fchain=data_out,
+    cymod.do_mcmc(conthpd=cmod.hpd, threads=100, fchain=data_out,
                   nwalkers=nwalker, nchain=2.0 * nchain, nburn=2.0 * nburn)
     cymod.show_hist(figout=fig_out, figext="png")
     num = np.histogram(cymod.flatchain[:, 1] / np.log(10.0), 100)
@@ -89,16 +89,16 @@ def rm(rmid, nwalker=500, nchain=250, nburn=250, ** kwargs):
         os.mkdir(str(rmid))
     except OSError:
         pass
-    try:
-        lc_gene(rmid)
-        fig_out = Location.project_loca + "result/light_curve/" + str(rmid) + \
-            "/cont-hbeta"
-        if "outname" in kwargs:
-            fig_out = fig_out + "-" + str(kwargs["outname"])
-        rm_single(rmid, nwalker, nchain, nburn, fig_out)
-        print("    Finished")
-    except Exception as reason:
-        print("    Failed because of: " + str(reason))
+    #try:
+    lc_gene(rmid)
+    fig_out = Location.project_loca + "result/light_curve/" + str(rmid) + \
+        "/cont-hbeta"
+    if "outname" in kwargs:
+        fig_out = fig_out + "-" + str(kwargs["outname"])
+    rm_single(rmid, nwalker, nchain, nburn, fig_out)
+    print("    Finished")
+    #except Exception as reason:
+    #    print("    Failed because of: " + str(reason))
 
 
-rm(909)
+rm(1141)
