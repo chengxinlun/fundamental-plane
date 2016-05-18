@@ -39,7 +39,8 @@ def lc_gene(rmid):
                 error_each = flux_each * error[each_day]
             except Exception:
                 continue
-            lc_file.write(str(each_day) + "    " + str(flux_each) + "    " + str(error_each) + "\n")
+            lc_file.write(str(each_day) + "    " + str(flux_each) + "    " +
+                          str(error_each) + "\n")
         lc_file.close()
 
 
@@ -59,18 +60,21 @@ def rm_single(rmid, nwalker, nchain, nburn, fig_out):
                   nwalkers=nwalker, nchain=2.0 * nchain, nburn=2.0 * nburn)
     cymod.show_hist(figout=fig_out, figext="png")
     num = np.histogram(cymod.flatchain[:, 1] / np.log(10.0), 100)
-    pickle.dump(num, open("num.pkl", "wb"))
+    num_x = np.array([(num[1][i] + num[1][i+1]) * 0.5
+                      for i in xrange(len(num[1]) - 1)])
     err = np.histogram(cymod.flatchain[:, 0] / np.log(10.0), 100)
+    err_x = np.array([(err[1][i] + err[1][i+1]) * 0.5
+                      for i in xrange(len(err[1]) - 1)])
     num_func = models.Gaussian1D(max(num[0]), np.mean(num[1]), 1.0)
     err_func = models.Gaussian1D(max(err[0]), np.mean(err[1]), 1.0)
     fitter = fitting.LevMarLSQFitter()
-    num_fit = fitter(num_func, num[1], num[0])
+    num_fit = fitter(num_func, num_x, num[0])
     fig = plt.figure()
     plt.hist(cymod.flatchain[:, 1] / np.log(10.0), 100)
     plt.plot(num[1], num_fit(num[1]))
     fig.savefig(fig_out + "-num.png")
     num_res = num_fit.parameters
-    err_fit = fitter(err_func, err[1], err[0])
+    err_fit = fitter(err_func, err_x, err[0])
     fig = plt.figure()
     plt.hist(cymod.flatchain[:, 0] / np.log(10.0), 100)
     plt.plot(err[1], num_fit(err[1]))
@@ -92,7 +96,7 @@ def rm(rmid, nwalker=500, nchain=250, nburn=250, ** kwargs):
         os.mkdir(str(rmid))
     except OSError:
         pass
-    #try:
+    # try:
     lc_gene(rmid)
     fig_out = Location.project_loca + "result/light_curve/" + str(rmid) + \
         "/cont-hbeta"
@@ -100,8 +104,8 @@ def rm(rmid, nwalker=500, nchain=250, nburn=250, ** kwargs):
         fig_out = fig_out + "-" + str(kwargs["outname"])
     rm_single(rmid, nwalker, nchain, nburn, fig_out)
     print("    Finished")
-    #except Exception as reason:
-    #    print("    Failed because of: " + str(reason))
+    # except Exception as reason:
+    #     print("    Failed because of: " + str(reason))
 
 
 rm(1141)
