@@ -59,6 +59,7 @@ def rm_single(rmid, nwalker, nchain, nburn, fig_out):
                   nwalkers=nwalker, nchain=2.0 * nchain, nburn=2.0 * nburn)
     cymod.show_hist(figout=fig_out, figext="png")
     num = np.histogram(cymod.flatchain[:, 1] / np.log(10.0), 100)
+    pickle.dump(num, open("num.pkl", "wb"))
     err = np.histogram(cymod.flatchain[:, 0] / np.log(10.0), 100)
     num_func = models.Gaussian1D(max(num[0]), np.mean(num[1]), 1.0)
     err_func = models.Gaussian1D(max(err[0]), np.mean(err[1]), 1.0)
@@ -75,6 +76,8 @@ def rm_single(rmid, nwalker, nchain, nburn, fig_out):
     plt.plot(err[1], num_fit(err[1]))
     fig.savefig(fig_out + "-err.png")
     err_res = err_fit.parameters
+    print(num_res)
+    print(err_res)
 
 
 def rm(rmid, nwalker=500, nchain=250, nburn=250, ** kwargs):
