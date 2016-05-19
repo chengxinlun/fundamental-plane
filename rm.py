@@ -45,20 +45,32 @@ def lc_gene(rmid):
 
 
 def rm_single(rmid, nwalker, nchain, nburn, fig_out):
+    # Input and output data position and name
     file_con = Location.project_loca + "result/light_curve/" + str(rmid) + \
         "/cont.txt"
     file_hbeta = Location.project_loca + "result/light_curve/" + str(rmid) + \
         "/Hbetab.txt"
+    lc_plot = Location.project_loca + "result/light_curve/" + str(rmid) + \
+        "lightcurve"
+    data_out = Location.project_loca + "result/light_curve/" + str(rmid) + \
+        "/cont-hbeta.txt"
+    last_mcmc = Location.project_loca + "result/light_curve/" + str(rmid) + \
+        "last_mcmc"
+    # Fit continuum
     c = get_data([file_con])
     cmod = Cont_Model(c)
     cmod.do_mcmc(threads=100, nwalkers=nwalker, nchain=nchain, nburn=nburn)
+    # Do mcmc
     cy = get_data([file_con, file_hbeta], names=["Continuum", "Hbeta"])
+    cy.plot(figout=lc_plot, figext="png")
     cymod = Rmap_Model(cy)
-    data_out = Location.project_loca + "result/light_curve/" + str(rmid) + \
-        "/cont-hbeta.txt"
     cymod.do_mcmc(conthpd=cmod.hpd, threads=100, fchain=data_out,
                   nwalkers=nwalker, nchain=2.0 * nchain, nburn=2.0 * nburn)
+    # Output mcmc result
     cymod.show_hist(figout=fig_out, figext="png")
+    cypred = cymod.do_pred()
+    cypred.plot(set_pred=True, obs=cy, figout=last_mcmc, figext="png")
+    # Fitting lag and error
     num = np.histogram(cymod.flatchain[:, 1] / np.log(10.0), 100)
     num_x = np.array([(num[1][i] + num[1][i+1]) * 0.5
                       for i in xrange(len(num[1]) - 1)])
@@ -77,7 +89,7 @@ def rm_single(rmid, nwalker, nchain, nburn, fig_out):
     err_fit = fitter(err_func, err_x, err[0])
     fig = plt.figure()
     plt.hist(cymod.flatchain[:, 0] / np.log(10.0), 100)
-    plt.plot(err[1], num_fit(err[1]))
+    plt.plot(err[1], err_fit(err[1]))
     fig.savefig(fig_out + "-err.png")
     err_res = err_fit.parameters
     print(num_res)
