@@ -108,4 +108,5 @@ def rm(rmid, nwalker=500, nchain=250, nburn=250, ** kwargs):
     #     print("    Failed because of: " + str(reason))
 
 
-rm(1141)
+# rm(1141)
+rm(909)
