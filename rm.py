@@ -53,11 +53,11 @@ def rm_single(rmid, nwalker, nchain, nburn, fig_out):
     file_hbeta = Location.project_loca + "result/light_curve/" + str(rmid) + \
         "/Hbetab.txt"
     lc_plot = Location.project_loca + "result/light_curve/" + str(rmid) + \
-        "lightcurve"
+        "/lightcurve"
     data_out = Location.project_loca + "result/light_curve/" + str(rmid) + \
         "/cont-hbeta.txt"
     last_mcmc = Location.project_loca + "result/light_curve/" + str(rmid) + \
-        "last_mcmc"
+        "/last_mcmc"
     # Fit continuum
     c = get_data([file_con])
     cmod = Cont_Model(c)
@@ -110,17 +110,13 @@ def rm(rmid, nwalker=500, nchain=250, nburn=250, ** kwargs):
         os.mkdir(str(rmid))
     except OSError:
         pass
-    # try:
-    lc_gene(rmid)
-    fig_out = Location.project_loca + "result/light_curve/" + str(rmid) + \
-        "/cont-hbeta"
-    if "outname" in kwargs:
-        fig_out = fig_out + "-" + str(kwargs["outname"])
-    rm_single(rmid, nwalker, nchain, nburn, fig_out)
-    print("    Finished")
-    # except Exception as reason:
-    #     print("    Failed because of: " + str(reason))
-
-
-# rm(1141)
-rm(909)
+    try:
+        lc_gene(rmid)
+        fig_out = Location.project_loca + "result/light_curve/" + str(rmid) + \
+            "/cont-hbeta"
+        if "outname" in kwargs:
+            fig_out = fig_out + "-" + str(kwargs["outname"])
+        rm_single(rmid, nwalker, nchain, nburn, fig_out)
+        print("    Finished")
+    except Exception as reason:
+        print("    Failed because of: " + str(reason))
