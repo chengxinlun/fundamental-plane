@@ -6,6 +6,7 @@ from line_integration import line_integration
 from error_scaling import error_scaling
 from binning import binning
 from mc_ee import mc_ee
+from rm import rm
 
 
 def task_splitter(task, num_thread):
@@ -57,5 +58,10 @@ def error_estimation_all():
         mc_ee(each)
 
 
-error_estimation_all()
-print("ALL FINISHED")
+def rm_all():
+    rmid_list = get_total_rmid_list()
+    for each in rmid_list:
+        rm(each)
+
+
+rm_all()
