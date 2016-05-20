@@ -58,6 +58,8 @@ def rm_single(rmid, nwalker, nchain, nburn, fig_out):
         "/cont-hbeta.txt"
     last_mcmc = Location.project_loca + "result/light_curve/" + str(rmid) + \
         "/last_mcmc"
+    result = Location.project_loca + "result/light_curve/" + str(rmid) + \
+        "/result.pkl"
     # Fit continuum
     c = get_data([file_con])
     cmod = Cont_Model(c)
@@ -94,8 +96,10 @@ def rm_single(rmid, nwalker, nchain, nburn, fig_out):
     plt.plot(err[1], err_fit(err[1]))
     fig.savefig(fig_out + "-err.png")
     err_res = err_fit.parameters
-    print(num_res)
-    print(err_res)
+    # Saving final result
+    file_out = open(result, "wb")
+    pickle.dump([num_res, err_res], file_out)
+    file_out.close()
 
 
 def rm(rmid, nwalker=500, nchain=250, nburn=250, ** kwargs):
