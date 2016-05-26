@@ -89,12 +89,14 @@ def rm_single(rmid, nwalker, nchain, nburn, fig_out):
     plt.hist(cymod.flatchain[:, 1] / np.log(10.0), 100)
     plt.plot(num[1], num_fit(num[1]))
     fig.savefig(fig_out + "-num.png")
+    plt.close()
     num_res = num_fit.parameters
     err_fit = fitter(err_func, err_x, err[0])
     fig = plt.figure()
     plt.hist(cymod.flatchain[:, 0] / np.log(10.0), 100)
     plt.plot(err[1], err_fit(err[1]))
     fig.savefig(fig_out + "-err.png")
+    plt.close()
     err_res = err_fit.parameters
     # Saving final result
     file_out = open(result, "wb")

@@ -1,4 +1,5 @@
 # Just run this file to get the result
+import os
 from base import get_total_rmid_list
 # from raw_reader import raw_reader
 from fe_fitter import fe_fitter
@@ -61,7 +62,13 @@ def error_estimation_all():
 def rm_all():
     rmid_list = get_total_rmid_list()
     for each in rmid_list:
-        rm(each)
+        newpid = os.fork()
+        if newpid == 0:
+            rm(each)
+            os._exit(0)
+        else:
+            pid, stauts = os.wait()
+            print("Child computation process terminated")
 
 
 rm_all()
