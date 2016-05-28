@@ -57,12 +57,19 @@ def plot_lum_vs_lag():
     rmid_list = get_total_rmid_list()
     zfinal = pickle.load(open(Location.project_loca +
                               "/info_database/zfinal.pkl"))
-    fig = plt.figure()
-    for each in rmid_list:
-        lum, lum_err = get_lum(each, zfinal)
-        lag, lag_err = get_lag(each, zfinal)
-        plt.errorbar([lum], [lag], xerr=[lum_err], yerr=[lag_err])
-        fig.text(lum, lag, str(each))
+    fig = plt.subplot(111)
     fig.set_xscale('log')
     fig.set_yscale('log')
+    for each in rmid_list:
+        try:
+            lag, lag_err = get_lag(each, zfinal)
+            lum, lum_err = get_lum(each, zfinal)
+        except Exception:
+            continue
+        plt.errorbar([lum], [lag], xerr=[lum_err], yerr=[lag_err])
+        #plt.errorbar([lum], [lag])
+        fig.text(lum, lag, str(each))
     plt.show()
+
+
+plot_lum_vs_lag()
