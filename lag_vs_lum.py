@@ -57,18 +57,39 @@ def plot_lum_vs_lag():
     rmid_list = get_total_rmid_list()
     zfinal = pickle.load(open(Location.project_loca +
                               "/info_database/zfinal.pkl"))
-    fig = plt.subplot(111)
-    fig.set_xscale('log')
-    fig.set_yscale('log')
+    lag_list = list()
+    lag_err_list = list()
+    lum_list = list()
+    lum_err_list = list()
+    fig = plt.figure()
     for each in rmid_list:
+        if each in [259]:
+            continue
         try:
             lag, lag_err = get_lag(each, zfinal)
+            lag_list.append(lag)
+            lag_err_list.append(lag_err)
             lum, lum_err = get_lum(each, zfinal)
+            lum_list.append(lum)
+            lum_err_list.append(lum_err)
         except Exception:
             continue
-        plt.errorbar([lum], [lag], xerr=[lum_err], yerr=[lag_err])
-        #plt.errorbar([lum], [lag])
-        fig.text(lum, lag, str(each))
+        plt.errorbar(np.log10([lum]), np.log10([lag]), xerr=[lum_err / lum], yerr=[lag_err / lag])
+        # plt.errorbar([lum], [lag])
+        fig.text(np.log10(lum), np.log10(lag), str(each))
+    lag = np.log10(np.array(lag_list))
+    lum = np.log10(np.array(lum_list))
+    lag_err = np.array(lag_err_list) / np.array(lag_list)
+    lum_err = np.array(lum_err_list) / np.array(lum_list)
+    theory = models.Linear1D(0.5, 0.0, fixed={"slope": True})
+    obs = models.Const1D(0.0)
+    fitter = fitting.LinearLSQFitter()
+    theory_fit = fitter(theory, lum, lag, weights = lag_err ** 2.0)
+    print(theory_fit.parameters)
+    obs_fit = fitter(obs, lum, lag, weights = lag_err ** 2.0)
+    print(obs_fit.parameters)
+    plt.plot(lum, theory_fit(lum))
+    plt.plot(lum, obs_fit(lum))
     plt.show()
 
 
