@@ -67,6 +67,8 @@ def plot_lum_vs_lag():
             continue
         try:
             lag, lag_err = get_lag(each, zfinal)
+            if lag < 3.0 * lag_err:
+                raise Exception
             lag_list.append(lag)
             lag_err_list.append(lag_err)
             lum, lum_err = get_lum(each, zfinal)
