@@ -43,7 +43,7 @@ def lc_gene(rmid):
                 error_each = abs(error[each_day] * flux[each_day] * 
                                  o3_flux[each_day] - o3_error[each_day] * 
                                  o3_flux[each_day] * flux[each_day]) / \
-                    (flux[each_day] ** 2.0)
+                    (o3_flux[each_day] ** 2.0)
             except Exception:
                 continue
             lc_file.write(str(each_day) + "    " + str(flux_each) + "    " +
