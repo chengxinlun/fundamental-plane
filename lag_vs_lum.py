@@ -63,15 +63,13 @@ def plot_lum_vs_lag():
     lum_err_list = list()
     fig = plt.figure()
     for each in rmid_list:
-        if each in [259]:
-            continue
         try:
             lag, lag_err = get_lag(each, zfinal)
-            if lag < 3.0 * lag_err:
+            lum, lum_err = get_lum(each, zfinal)
+            if lag < 3.0 * lag_err or lum < 3.0 * lum_err:
                 raise Exception
             lag_list.append(lag)
             lag_err_list.append(lag_err)
-            lum, lum_err = get_lum(each, zfinal)
             lum_list.append(lum)
             lum_err_list.append(lum_err)
         except Exception:
@@ -91,6 +89,7 @@ def plot_lum_vs_lag():
     print(obs_fit.parameters)
     rcs = np.sum((obs_fit(lum) - lag) ** 2.0) ** 0.5 / (len(rmid_list) - 1.0)
     print(rcs)
+    print(len(lum))
     plt.errorbar(lum, lag, xerr=lum_err, yerr=lag_err, fmt='o')
     # plt.plot(lum, theory_fit(lum))
     plt.plot(lum, obs_fit(lum))

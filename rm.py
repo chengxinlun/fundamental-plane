@@ -25,6 +25,8 @@ def read_re(rmid, band):
 
 
 def lc_gene(rmid):
+    o3_flux = read_flux(rmid, "O3")
+    o3_error = read_re(rmid, "O3")
     band_list = ["Hbetab", "O3", "cont"]
     for each in band_list:
         flux = read_flux(rmid, each)
@@ -37,8 +39,11 @@ def lc_gene(rmid):
                        str(rmid) + "/" + str(each) + ".txt", "w")
         for each_day in mjd_list:
             try:
-                flux_each = flux[each_day]
-                error_each = flux_each * error[each_day]
+                flux_each = flux[each_day] / o3_flux[each_day]
+                error_each = abs(error[each_day] * flux[each_day] * 
+                                 o3_flux[each_day] - o3_error[each_day] * 
+                                 o3_flux[each_day] * flux[each_day]) / \
+                    (flux[each_day] ** 2.0)
             except Exception:
                 continue
             lc_file.write(str(each_day) + "    " + str(flux_each) + "    " +
