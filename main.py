@@ -46,12 +46,7 @@ def rescale_all():
 
 
 def error_estimation_all():
-    already = [238, 909, 1202, 497, 559, 1043, 238, 917, 1106, 1094, 569, 742, 29, 456,
-               905, 946, 1212, 607, 1101, 51, 423, 405, 980, 732, 379, 1213, 1103, 469,
-               866, 887, 370, 936, 1078, 925, 437, 76, 1039, 783, 131, 337, 351, 1087,
-               1098, 418, 527, 844, 149, 1210, 416, 450, 151, 656, 1021, 1122, 1055,
-               1052, 259, 269, 377, 1149, 518, 225, 118, 1137, 371, 1076, 637, 1105,
-               1165, 1207, 786, 1128, 992, 1099, 373, 1088, 127, 1089, 664]
+    already = []
     rmid_list = get_total_rmid_list()
     for each in rmid_list:
         if each in already:
@@ -62,13 +57,7 @@ def error_estimation_all():
 def rm_all():
     rmid_list = get_total_rmid_list()
     for each in rmid_list:
-        newpid = os.fork()
-        if newpid == 0:
-            rm(each)
-            os._exit(0)
-        else:
-            pid, stauts = os.wait()
-            print("Child computation process terminated")
+        rm(each)
 
 
 rm_all()

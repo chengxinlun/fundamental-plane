@@ -37,11 +37,11 @@ def lc_gene(rmid):
                        str(rmid) + "/" + str(each) + ".txt", "w")
         for each_day in mjd_list:
             try:
-                flux_each = flux[each_day] / o3_flux[each_day]
+                flux_each = flux[each_day] / o3_flux[each_day] * np.mean(o3_flux.values())
                 error_each = abs(error[each_day] * flux[each_day] *
                                  o3_flux[each_day] - o3_error[each_day] *
                                  o3_flux[each_day] * flux[each_day]) / \
-                    (o3_flux[each_day] ** 2.0)
+                    (o3_flux[each_day] ** 2.0) * np.mean(o3_flux.values())
             except Exception:
                 continue
             lc_file.write(str(each_day) + "    " + str(flux_each) + "    " +
@@ -76,10 +76,10 @@ def rm_single(rmid, nwalker, nchain, nburn, min_lag, max_lag, fig_out):
     cymod.show_hist(figout=fig_out, figext="png")
     cypred = cymod.do_pred()
     cypred.plot(set_pred=True, obs=cy, figout=last_mcmc, figext="png")
-    return cymod.get_hpd()
+    return [cymod.hpd[0][2], cymod.hpd[1][2], cymod.hpd[2][2]]
 
 
-def rm(rmid, nwalker=500, nchain=250, nburn=250, ** kwargs):
+def rm(rmid, nwalker=100, nchain=50, nburn=50, ** kwargs):
     print("Begin rm for " + str(rmid))
     os.chdir(Location.project_loca + "result")
     try:
@@ -98,8 +98,32 @@ def rm(rmid, nwalker=500, nchain=250, nburn=250, ** kwargs):
         if "outname" in kwargs:
             fig_out = fig_out + "-" + str(kwargs["outname"])
         min_lag = 0.0
-        max_lag = 500.0
-        print(rm_single(rmid, nwalker, nchain, nburn, min_lag, max_lag, fig_out))
+        max_lag = 355.0
+        new_min = 0.0
+        new_max = 177.0
+        while (new_max - new_min) < 0.5 * (max_lag - min_lag):
+            min_lag = new_min
+            max_lag = new_max
+            pipein, pipeout = os.pipe()
+            newpid = os.fork()
+            if newpid == 0:
+                new_min, new_mid, new_max = rm_single(rmid, nwalker, nchain, nburn, min_lag, max_lag, fig_out)
+                res = str(new_min) + "," + str(new_mid) + "," + str(new_max)
+                os.write(pipeout, res.encode())
+                os._exit(0)
+            else:
+                new_res = os.read(pipein, 64).decode()
+                new_min = float(new_res.split(",")[0])
+                new_mid = float(new_res.split(",")[1])
+                new_max = float(new_res.split(",")[2])
+                print((new_max - new_min) / (max_lag - min_lag))
+        fileout = open(Location.project_loca + "result/light_curve/" + str(rmid) +
+                       "/result.txt", "w")
+        fileout.write(new_res)
+        fileout.close()
         print("    Finished")
     except Exception as reason:
         print("    Failed because of: " + str(reason))
+
+
+rm(269)
