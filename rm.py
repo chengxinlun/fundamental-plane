@@ -74,7 +74,8 @@ def rm_single(rmid, nwalker, nchain, nburn, fig_out):
     cy.plot(figout=lc_plot, figext="png")
     cymod = Rmap_Model(cy)
     cymod.do_mcmc(conthpd=cmod.hpd, threads=100, fchain=data_out,
-                  nwalkers=nwalker, nchain=2.0 * nchain, nburn=2.0 * nburn)
+                  nwalkers=nwalker, nchain=2.0 * nchain, nburn=2.0 * nburn,
+                  laglimit=[[32.5, 40.7]])
     # Output mcmc result
     cymod.show_hist(figout=fig_out, figext="png")
     cypred = cymod.do_pred()

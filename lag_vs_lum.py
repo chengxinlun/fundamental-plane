@@ -41,7 +41,7 @@ def get_lum(rmid, zfinal_dict):
     cosmo = FlatLambdaCDM(H0=70.0, Om0=0.3)
     dl_MPC = cosmo.luminosity_distance(z)
     dl_cm = float(dl_MPC.value * 3.085677581 * (10.0 ** 24.0))
-    lum = 4.0 * 3.1415926 * dl_cm * dl_cm * flux[0] * 10. ** (0. - 17.)
+    lum = 4.0 * 3.1415926 * dl_cm * dl_cm * flux[0] * 10. ** (0. - 17.) * 5100.0
     return [lum, flux[1] * lum]
 
 
