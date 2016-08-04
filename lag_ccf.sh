@@ -11,6 +11,6 @@ do
 		cd $rmid
 		cp $project_loca"/code/dcf_f90" .
 		input_argument="2\ndcf\nn\n0\nn\n100\ncont.txt\nHbetab.txt\n"
-		echo -e $input_argument | ./dcf_f90
+		printf "$input_argument" | ./dcf_f90
 		cd $all_rmid
 done
