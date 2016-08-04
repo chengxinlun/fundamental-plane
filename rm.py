@@ -1,4 +1,5 @@
 import os
+import warnings
 import numpy as np
 import matplotlib
 matplotlib.use('Agg')
@@ -79,7 +80,8 @@ def rm_single(rmid, nwalker, nchain, nburn, min_lag, max_lag, fig_out):
     return [cymod.hpd[0][2], cymod.hpd[1][2], cymod.hpd[2][2]]
 
 
-def rm(rmid, nwalker=100, nchain=50, nburn=50, ** kwargs):
+def rm(rmid, nwalker=300, nchain=150, nburn=150, ** kwargs):
+    warnings.simplefilter("error")
     print("Begin rm for " + str(rmid))
     os.chdir(Location.project_loca + "result")
     try:
@@ -97,33 +99,28 @@ def rm(rmid, nwalker=100, nchain=50, nburn=50, ** kwargs):
             "/cont-hbeta"
         if "outname" in kwargs:
             fig_out = fig_out + "-" + str(kwargs["outname"])
-        min_lag = 0.0
-        max_lag = 355.0
-        new_min = 0.0
-        new_max = 177.0
-        while (new_max - new_min) < 0.5 * (max_lag - min_lag):
-            min_lag = new_min
-            max_lag = new_max
-            pipein, pipeout = os.pipe()
-            newpid = os.fork()
-            if newpid == 0:
-                new_min, new_mid, new_max = rm_single(rmid, nwalker, nchain, nburn, min_lag, max_lag, fig_out)
-                res = str(new_min) + "," + str(new_mid) + "," + str(new_max)
-                os.write(pipeout, res.encode())
-                os._exit(0)
-            else:
-                new_res = os.read(pipein, 64).decode()
-                new_min = float(new_res.split(",")[0])
-                new_mid = float(new_res.split(",")[1])
-                new_max = float(new_res.split(",")[2])
-                print((new_max - new_min) / (max_lag - min_lag))
-        fileout = open(Location.project_loca + "result/light_curve/" + str(rmid) +
-                       "/result.txt", "w")
-        fileout.write(new_res)
-        fileout.close()
-        print("    Finished")
     except Exception as reason:
         print("    Failed because of: " + str(reason))
-
-
-rm(269)
+    pipein, pipeout = os.pipe()
+    newpid = os.fork()
+    if newpid == 0:
+        try:
+            new_min, new_mid, new_max = rm_single(rmid, nwalker, nchain, nburn, 0.0, 100.0, fig_out)
+            res = str(new_min) + "," + str(new_mid) + "," + str(new_max)
+        except Exception as reason:
+            print("    Failed because of: " + str(reason))
+            res = "-1.0,-1.0,1.0"
+        finally:
+            os.write(pipeout, res.encode())
+            os._exit(0)
+    else:
+        new_res = os.read(pipein, 64).decode()
+        os.wait()
+        new_min = float(new_res.split(",")[0])
+        new_mid = float(new_res.split(",")[1])
+        new_max = float(new_res.split(",")[2])
+    fileout = open(Location.project_loca + "result/light_curve/" + str(rmid) +
+                   "/result.txt", "w")
+    fileout.write(new_res)
+    fileout.close()
+    print("    Finished")
