@@ -8,6 +8,7 @@ from error_scaling import error_scaling
 from binning import binning
 from mc_ee import mc_ee
 from rm import rm
+from hist_fit import hist_fit
 
 
 def task_splitter(task, num_thread):
@@ -60,4 +61,10 @@ def rm_all():
         rm(each)
 
 
-rm_all()
+def hist_fit_all():
+    rmid_list = get_total_rmid_list()
+    for each in rmid_list:
+        hist_fit(each)
+
+
+hist_fit_all()
