@@ -47,9 +47,9 @@ def mc_ee_single(rmid, mjd):
     print("    Begin for " + str(mjd))
     try:
         [wave, flux, error] = read_raw_data(rmid, mjd)
-        error = pickle.load(open(Location.project_loca + "data/raw/" +
-                                 str(rmid) + "/" + str(mjd) + "/" +
-                                 "error_scaled.pkl", "rb"))
+        # error = pickle.load(open(Location.project_loca + "data/raw/" +
+        #                          str(rmid) + "/" + str(mjd) + "/" +
+        #                          "error_scaled.pkl", "rb"))
         [wave, flux, error] = mask_points(wave, flux, error)
         [wave, flux, error] = extract_fit_part(wave, flux, error, 4000.0,
                                                5500.0)

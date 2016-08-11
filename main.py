@@ -1,5 +1,4 @@
 # Just run this file to get the result
-import os
 from base import get_total_rmid_list
 # from raw_reader import raw_reader
 from fe_fitter import fe_fitter
@@ -31,7 +30,10 @@ def fit_all():
 def inte_all():
     rmid_list = get_total_rmid_list()
     for each in rmid_list:
-        line_integration(each)
+        try:
+            line_integration(each)
+        except Exception as reason:
+            print("Failed because of: " + str(reason))
 
 
 def bin_all():
@@ -47,18 +49,21 @@ def rescale_all():
 
 
 def error_estimation_all():
-    already = []
     rmid_list = get_total_rmid_list()
     for each in rmid_list:
-        if each in already:
-            continue
-        mc_ee(each)
+        try:
+            mc_ee(each)
+        except Exception as reason:
+            print("Failed because of: " + str(reason))
 
 
 def rm_all():
     rmid_list = get_total_rmid_list()
     for each in rmid_list:
-        rm(each)
+        try:
+            rm(each)
+        except Exception as reason:
+            print("Failed because of: " + str(reason))
 
 
 def hist_fit_all():
@@ -67,4 +72,7 @@ def hist_fit_all():
         hist_fit(each)
 
 
+inte_all()
+error_estimation_all()
+rm_all()
 hist_fit_all()
