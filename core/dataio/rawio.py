@@ -85,9 +85,9 @@ def _get_raw_nofile(rmid, mjd):
                         str(mjd))
     zfinal = info.zfinal
     # Get the corresponding plate, fiberid
-    index = np.where(info.mjd == mjd)
-    plate = info.plate(index)
-    fiberid = info.fiberid(index)
+    index = np.where(info.mjd == mjd)[0]
+    plate = info.plate[index]
+    fiberid = info.fiberid[index]
     # Read data from fits (Reference: psrm.plotSpec.plotSPec)
     parM = SF_deredden(plate, fiberid, 'fluxerr', mjd=mjd)
     wave = parM['wave']
