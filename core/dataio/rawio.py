@@ -75,7 +75,9 @@ def get_raw(rmid, mjd):
     try:
         # Get pickled database
         f = open(os.path.join(Location.root, Location.rawdata, fname), "rb")
-        wave, flux, error = pickle.load(f)
+        wave = pickle.load(f)
+        flux = pickle.load(f)
+        error = pickle.load(f)
         f.close()
     except Exception:
         # If cannot find pickled data, read and pickle
