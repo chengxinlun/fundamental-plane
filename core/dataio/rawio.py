@@ -8,10 +8,16 @@ A module where functions related to raw data input and output are stored
 import os
 import pickle
 import numpy as np
+from psrm.base.target_fibermap import parseVar_sid
 from psrm.analSpec.ob2rf import ob2rf
 from psrm.analSpec.deredden import SF_deredden
 from ..source import Source
 from ..location import Location
+
+
+def get_rm_list():
+    info = parseVar_sid('RM')
+    return info.keys()
 
 
 def get_source_info(rmid):
