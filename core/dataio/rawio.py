@@ -15,7 +15,17 @@ from ..source import Source
 from ..location import Location
 
 
+__all__ = ['get_rm_list', 'get_source_info', 'get_raw']
+
+
 def get_rm_list():
+    '''
+    get_rm_list()
+    =============
+    Input: None
+
+    Output: info.keys: a list including all the sid of rm objects
+    '''
     info = parseVar_sid('RM')
     return info.keys()
 

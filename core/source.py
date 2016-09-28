@@ -9,6 +9,7 @@ from psrm.base.target_fibermap import parseVar_sid
 
 
 class Source:
+    # Basic information
     rmid = -1
     ra = None
     dec = None
@@ -17,6 +18,10 @@ class Source:
     mjd = []
     fiberid = []
     info_complete = False
+    # Advanced information
+    issec = False           # Super-Eddington candidate or not
+    eddratio = None         # Eddington ratio
+    lag_hb = None           # Time lag of HBeta
 
     def __init__(self, rmid):
         info = parseVar_sid(rmid, 'ra', 'dec', 'zfinal', 'plate', 'mjd',
