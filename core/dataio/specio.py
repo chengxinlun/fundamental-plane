@@ -11,7 +11,7 @@ core.dataio.rawio. Further raw data io should also be implemeted there.
 import os
 import pickle
 from ..location import Location
-from .rawio import _create_directory
+from ..util.io import create_directory
 
 
 __all__ = ['get_spec', 'save_spec']
@@ -27,7 +27,7 @@ def get_spec(filedir):
 
 
 def save_spec(wave, flux, error, filedir, filename):
-    _create_directory(filedir)
+    create_directory(filedir)
     f = open(os.path.join(Location.root, filedir, filename), 'wb')
     pickle.dump(wave, f)
     pickle.dump(flux, f)

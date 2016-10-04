@@ -12,3 +12,4 @@ class Location:
     root = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../../")
     sourcebase = "data/source"
     rawdata = "data/raw"
+    pt = "data/pt"

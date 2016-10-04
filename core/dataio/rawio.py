@@ -11,6 +11,7 @@ import numpy as np
 from psrm.base.target_fibermap import parseVar_sid
 from psrm.analSpec.ob2rf import ob2rf
 from psrm.analSpec.deredden import SF_deredden
+from ..util.io import create_directory
 from ..source import Source
 from ..location import Location
 
@@ -48,7 +49,7 @@ def get_source_info(rmid):
         # If Source class cannot be found, create one
         info = Source(rmid)
         try:
-            _create_directory(Location.sourcebase)
+            create_directory(Location.sourcebase)
             # Save it to file
             fo = open(os.path.join(Location.root, Location.sourcebase, fname),
                       "wb")
@@ -83,7 +84,7 @@ def get_raw(rmid, mjd):
         # If cannot find pickled data, read and pickle
         wave, flux, error = _get_raw_nofile(rmid, mjd)
         try:
-            _create_directory(Location.rawdata)
+            create_directory(Location.rawdata)
             fo = open(os.path.join(Location.root, Location.rawdata, fname),
                       "wb")
             pickle.dump(wave, fo)
@@ -115,11 +116,3 @@ def _get_raw_nofile(rmid, mjd):
     error = parM['fluxerr']
     rf = ob2rf(wave, flux, zfinal, fluxerr=error)
     return [rf["wave"], rf["flux"], rf["fluxerr"]]
-
-
-def _create_directory(dire):
-    cwd = os.getcwd()
-    os.chdir(Location.root)
-    if not os.path.exists(dire):
-        os.makedirs(dire)
-    os.chdir(cwd)
