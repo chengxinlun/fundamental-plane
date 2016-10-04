@@ -1,3 +1,3 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-__all__ = ['errorcalib', 'ptcalib']
+__all__ = ['errorcalib', 'ptcalib', 'splitspec']
