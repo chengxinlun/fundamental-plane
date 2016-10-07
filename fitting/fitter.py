@@ -28,7 +28,7 @@ def lmlsq(model, x, y, e, maxi):
     '''
     fit = fitting.LevMarLSQFitter()
     # Report all warnings as exceptions
-    with warnings.catch_warnings():
-        warnings.filterwarnings('error')
-        res = fit(model, x, y, weights=e**(0.0-2.0), maxiter=maxi)
+    # with warnings.catch_warnings():
+    #    warnings.filterwarnings('error')
+    res = fit(model, x, y, weights=e**(0.0-2.0), maxiter=maxi)
     return res
