@@ -89,9 +89,15 @@ class Fe2V(Fittable1DModel):
             0.42, 0.11, 0.09, 0.21, 0.07, 0.22, 0.13,
             0.06, 0.09]
 
+    center_n3 = np.array(center_n3)
+    center_l1 = np.array(center_l1)
+    i_l1 = np.array(i_l1)
+    i_n3 = np.array(i_n3)
+
     @staticmethod
     def evaluate(x, l1_shift, l1_width, l1_i_r, n3_shift, n3_width, n3_i_r):
         res = 0.0
+        '''
         for i in range(0, len(Fe2V.center_l1)):
             f = models.Lorentz1D(l1_i_r * Fe2V.i_l1[i],
                                  Fe2V.center_l1[i] + l1_shift,
@@ -104,6 +110,19 @@ class Fe2V(Fittable1DModel):
                                  n3_width * np.sqrt(3 / 2) * Fe2V.center_n3[i] /
                                  299792.458)
             res = res + f(x)
+        '''
+        f = models.Lorentz1D(l1_i_r * Fe2V.i_l1,
+                             Fe2V.i_l1 +
+                             np.repeat(np.array([l1_shift]), len(Fe2V.i_l1)),
+                             l1_width * np.sqrt(3 / 2) / 299792.458 *
+                             Fe2V.center_l1)
+        res = res + np.sum(f(x))
+        f = models.Lorentz1D(l1_i_r * Fe2V.i_n3,
+                             Fe2V.i_n3 +
+                             np.repeat(np.array([n3_shift]), len(Fe2V.i_n3)),
+                             n3_width * np.sqrt(3 / 2) / 299792.458 *
+                             Fe2V.center_n3)
+        res = res + np.sum(f(x))
         return res
 
 
