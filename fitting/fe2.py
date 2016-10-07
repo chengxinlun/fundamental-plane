@@ -92,7 +92,7 @@ class Fe2V(Fittable1DModel):
     @staticmethod
     def evaluate(x, l1_shift, l1_width, l1_i_r, n3_shift, n3_width, n3_i_r):
         res = 0.0
-        for i in range(0, len(Fe2V.add_modelcenter_l1)):
+        for i in range(0, len(Fe2V.center_l1)):
             f = models.Lorentz1D(l1_i_r * Fe2V.i_l1[i],
                                  Fe2V.center_l1[i] + l1_shift,
                                  l1_width * np.sqrt(3 / 2) * Fe2V.center_l1[i] /
