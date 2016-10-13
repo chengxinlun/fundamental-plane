@@ -32,6 +32,9 @@ class ContSdss(Fittable1DModel):
     @staticmethod
     def evaluate(x, amplitude, x_0, alpha, c_0, c_1, c_2, c_3):
         pl = models.PowerLaw1D(amplitude, x_0, alpha, fixed={"x_0": True})
-        po = models.Polynomial1D(3, {'c_0': c_0, 'c_1': c_1, 'c_2': c_2,
-                                     'c_3': c_3})
+        po = models.Polynomial1D(3)
+        po.c0 = c_0
+        po.c1 = c_1
+        po.c2 = c_2
+        po.c3 = c_3
         return pl(x) + po(x)
