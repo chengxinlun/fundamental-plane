@@ -7,8 +7,8 @@ A module for FeII templates
 
 Note: Only derived classes of Fittable1DModel are allowed here
 '''
-import numpy as np
 from astropy.modeling import models, Fittable1DModel, Parameter
+from ..core.util.spectra import v2lambda
 
 
 __all__ = ['Fe2V']
@@ -94,15 +94,13 @@ class Fe2V(Fittable1DModel):
         res = 0.0
         for i in range(0, len(Fe2V.center_l1)):
             f = models.Lorentz1D(l1_i_r * Fe2V.i_l1[i],
-                                 Fe2V.center_l1[i] + l1_shift,
-                                 l1_width * np.sqrt(3 / 2) * Fe2V.center_l1[i] /
-                                 299792.458)
+                                 *v2lambda(l1_shift, l1_width,
+                                           Fe2V.center_l1[i]))
             res = res + f(x)
         for i in range(0, len(Fe2V.center_n3)):
             f = models.Lorentz1D(n3_i_r * Fe2V.i_n3[i],
-                                 Fe2V.center_n3[i] + n3_shift,
-                                 n3_width * np.sqrt(3 / 2) * Fe2V.center_n3[i] /
-                                 299792.458)
+                                 *v2lambda(n3_shift, n3_width,
+                                           Fe2V.center_n3[i]))
             res = res + f(x)
         return res
 
