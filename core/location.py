@@ -13,3 +13,4 @@ class Location:
     sourcebase = "data/source"
     rawdata = "data/raw"
     pt = "data/pt"
+    fitting = "result/fitting"
