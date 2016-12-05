@@ -92,15 +92,15 @@ class Fe2V(Fittable1DModel):
     @staticmethod
     def evaluate(x, l1_shift, l1_width, l1_i_r, n3_shift, n3_width, n3_i_r):
         res = 0.0
-        for i in range(0, len(Fe2V.center_l1)):
-            f = models.Gaussian1D(l1_i_r * Fe2V.i_l1[i],
-                                  *v2lambda(l1_shift, l1_width,
-                                            Fe2V.center_l1[i]))
-            res = res + f(x)
         for i in range(0, len(Fe2V.center_n3)):
             f = models.Gaussian1D(n3_i_r * Fe2V.i_n3[i],
                                   *v2lambda(n3_shift, n3_width,
                                             Fe2V.center_n3[i]))
+            res = res + f(x)
+        for i in range(0, len(Fe2V.center_l1)):
+            f = models.Gaussian1D(l1_i_r * Fe2V.i_l1[i],
+                                  *v2lambda(l1_shift, l1_width,
+                                            Fe2V.center_l1[i]))
             res = res + f(x)
         return res
 
