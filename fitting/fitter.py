@@ -28,3 +28,9 @@ def lmlsq(model, x, y, e, maxi):
     fit = fitting.LevMarLSQFitter()
     res = fit(model, x, y, weights=e**(0.0-2.0), maxiter=maxi)
     return res
+
+
+def silsq(model, x, y, e, maxi):
+    fit = fitting.SimplexLSQFitter()
+    res = fit(model, x, y, weights=e ** (0.0 - 2.0), maxiter=maxi)
+    return res
