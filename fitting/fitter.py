@@ -7,7 +7,6 @@ A module for fitter
 
 Note: All functions here must follow the same parameters and same return
 '''
-import warnings
 from astropy.modeling import fitting
 
 
@@ -27,8 +26,5 @@ def lmlsq(model, x, y, e, maxi):
     Output: res: A same model with optimized parameters
     '''
     fit = fitting.LevMarLSQFitter()
-    # Report all warnings as exceptions
-    # with warnings.catch_warnings():
-    #    warnings.filterwarnings('error')
     res = fit(model, x, y, weights=e**(0.0-2.0), maxiter=maxi)
     return res
