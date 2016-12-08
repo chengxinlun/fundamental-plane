@@ -14,4 +14,5 @@ class Location:
     rawdata = "data/raw"
     pt = "data/pt"
     fitting = "result/fitting"
+    mc = "result/mc"
     fitting_plot = "plot/fitting"
