@@ -8,6 +8,8 @@ A module for fitter
 Note: All functions here must follow the same parameters and same return
 '''
 from astropy.modeling import fitting
+from lmfit.minimizer import Minimizer
+from lmfit.parameter import Parameters
 
 
 __all__ = ['lmlsq']
@@ -27,10 +29,4 @@ def lmlsq(model, x, y, e, maxi):
     '''
     fit = fitting.LevMarLSQFitter()
     res = fit(model, x, y, weights=e**(0.0-2.0), maxiter=maxi)
-    return res
-
-
-def silsq(model, x, y, e, maxi):
-    fit = fitting.SimplexLSQFitter()
-    res = fit(model, x, y, weights=e ** (0.0 - 2.0), maxiter=maxi)
     return res
