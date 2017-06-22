@@ -8,8 +8,7 @@ A module for fitter
 Note: All functions here must follow the same parameters and same return
 '''
 from astropy.modeling import fitting
-from lmfit.minimizer import Minimizer
-from lmfit.parameter import Parameters
+from lmfit import Minimizer
 
 
 __all__ = ['lmlsq']
@@ -29,4 +28,21 @@ def lmlsq(model, x, y, e, maxi):
     '''
     fit = fitting.LevMarLSQFitter()
     res = fit(model, x, y, weights=e**(0.0-2.0), maxiter=maxi)
+    return res
+
+
+def conggrad(model, x, y, e, maxi):
+    '''
+    conggrad(model, x, y, e, maxi)
+    ==============================
+    Input: model: A class for the model with initial set
+           x: A numpy array for x
+           y: A numpy array for y
+           e: A numpy array for error of y
+           maxi: An int for max number of iterations
+
+    Ouput: res: A same model with optimized parameters
+    '''
+    fitter = Minimizer(model.residue, model.pars, fcn_args=(x, y, e))
+    res = fitter.minimize(method='cg', params=model.pars, options={'gtol':0.01})
     return res
