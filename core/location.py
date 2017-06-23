@@ -16,3 +16,5 @@ class Location:
     fitting = "result/fitting"
     mc = "result/mc"
     fitting_plot = "plot/fitting"
+    lightcurve = "result/lightcurve"
+    revmap = "result/revmap"
