@@ -8,7 +8,7 @@ A module for FeII templates based on Boroson 1994 et al.
 Note that it is assumed that FeII will not shift in velocity
 '''
 import numpy as np
-from scipy.interpolate import interp1d
+from scipy.interpolate import UnivariateSpline
 
 
 __all__ = ['borFe2', 'readFe2', 'consFe2']
@@ -31,6 +31,5 @@ def readFe2():
 
 
 def consFe2(w, f):
-    fet = interp1d(w, f, kind='cubic', bounds_error=False,
-                   fill_value='extrapolate')
+    fet = UnivariateSpline(w, f, s=0)
     return fet
