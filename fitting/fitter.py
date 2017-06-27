@@ -44,5 +44,5 @@ def conggrad(model, x, y, e, maxi):
     Ouput: res: A same model with optimized parameters
     '''
     fitter = Minimizer(model.residue, model.pars, fcn_args=(x, y, e))
-    res = fitter.minimize(method='cg', params=model.pars, options={'gtol':0.01})
+    res = fitter.minimize(method='leastsq', params=model.pars)
     return res
