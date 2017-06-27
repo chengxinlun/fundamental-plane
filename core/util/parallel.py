@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
 core.util.parallel
@@ -11,13 +10,6 @@ import multiprocessing as mul
 __all__ = ['para_return']
 
 
-res_list = []
-
-
-def _log_result(res):
-    res_list.append(res)
-
-
 def para_return(func, params, num_thread=4):
     '''
     para_return(func, params, res, num_thread=4)
@@ -26,9 +18,14 @@ def para_return(func, params, num_thread=4):
            params: a 2-d list. axis-1 is used to store parameters for func
            num_thread: default value: 4. Number of threads
     '''
+    wait_list = []
+    res_list = []
     p = mul.Pool(processes=num_thread)
     for each in params:
-        p.apply_async(func, each, callback=_log_result)
+        r = p.apply_async(func, each)
+        wait_list.append(r)
+    for each in wait_list:
+        res_list.append(each.get())
     p.close()
     p.join()
     return res_list
