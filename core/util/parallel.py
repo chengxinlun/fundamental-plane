@@ -18,14 +18,12 @@ def para_return(func, params, num_thread=4):
            params: a 2-d list. axis-1 is used to store parameters for func
            num_thread: default value: 4. Number of threads
     '''
-    wait_list = []
     res_list = []
     p = mul.Pool(processes=num_thread)
     for each in params:
-        r = p.apply_async(func, each)
-        wait_list.append(r)
-    for each in wait_list:
-        res_list.append(each.get())
+        def _log_result(res):
+            res_list.append(res)
+        p.apply_async(func, each, call_back=_log_result)
     p.close()
     p.join()
     return res_list
