@@ -22,6 +22,12 @@ class borFe2():
     def eval(self, x, amp, shift):
         return self.model(x - shift) * amp
 
+    def inte(self, amp, shift, intr=None):
+        if intr is None:
+            intr = np.arange(4000.0, 5000.0, 0.1)
+        y = self.eval(intr, amp, shift)
+        return np.trapz(y, intr)
+
 
 def readFe2():
     l = np.loadtxt("irontemplate.dat")

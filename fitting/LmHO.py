@@ -75,3 +75,13 @@ class LmHO():
     def residue(self, params, x, data, eps):
         the = self.eval(params, x)
         return ((the - data) / eps) ** 2.0
+
+    def integrate(self, params):
+        pvs = params.valuesdict()
+        o3a1 = pvs["o3amp1"]
+        o3a2 = pvs["o3amp2"]
+        hna = pvs["hnamp"]
+        hba1 = pvs["hbamp1"]
+        hba2 = pvs["hbamp2"]
+        res_dict = {"o3": o3a1 + o3a2, "hbeta": hna + hba1 + hba2}
+        return res_dict

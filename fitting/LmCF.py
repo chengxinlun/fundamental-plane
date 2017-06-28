@@ -39,3 +39,14 @@ class LmCF():
     def residue(self, params, x, data, eps):
         the = self.eval(params, x)
         return ((the - data) / eps) ** 2.0
+
+    def integrate(self, params, intr=None):
+        pvs = params.valuesdict()
+        feamp = pvs["fe2amp"]
+        feshift = pvs["fe2shift"]
+        amp = pvs["amplitude"]
+        alp = pvs["alpha"]
+        x0 = pvs["x0"]
+        res_dict = {"cont": powerlaw(5100.0 / x0, amp, alp), "fe2":
+                    self.fet.inte(feamp, feshift, intr)}
+        return res_dict
