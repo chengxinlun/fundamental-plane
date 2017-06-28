@@ -5,6 +5,7 @@ fitting.LmCF
 ============
 A module for continuum and optical FeII model
 '''
+from copy import deepcopy
 from lmfit.parameter import Parameters
 from lmfit.lineshapes import powerlaw
 from .BorFe2 import borFe2
@@ -23,7 +24,7 @@ class LmCF():
             self.pars.add("amplitude", value=data0, min=0.0)
             self.pars.add('alpha', value=1.0 if data0 < data1 else -1.0)
         else:
-            self.pars = initp.deepcopy()
+            self.pars = deepcopy(initp)
         self.fet = borFe2()
 
     def eval(self, params, x):

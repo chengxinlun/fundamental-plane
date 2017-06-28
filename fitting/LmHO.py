@@ -5,6 +5,7 @@ fitting.LmHO
 =============
 A module for Hbeta and OIII emission line
 '''
+from copy import deepcopy
 from lmfit.parameter import Parameters
 from lmfit.lineshapes import gaussian
 from ..core.util.spectra import v2lambda
@@ -44,7 +45,7 @@ class LmHO():
             self.pars.add('hbwidth1', value=1500.0, min=1200.0, max=2000.0)
             self.pars.add('hbwidth2', value=1500.0, min=1200.0, max=2000.0)
         else:
-            self.pars = initp.deepcopy()
+            self.pars = deepcopy(initp)
 
     def eval(self, params, x):
         hb = 4853.41
