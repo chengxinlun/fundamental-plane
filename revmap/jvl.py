@@ -15,10 +15,10 @@ from javelin.lcmodel import Cont_Model, Rmap_Model
 __all__ = ['rm_single']
 
 
-def rm_single(rmid, nwalker=300, nchain=150, nburn=150, min_lag=0.0,
+def rm_single(rmid, nwalker=100, nchain=100, nburn=100, min_lag=0.0,
               max_lag=200.0, nthread=100.0):
     '''
-    rm_single(rmid, nwalker=300, nchain=150, nburn=150, min_lag=0.0,
+    rm_single(rmid, nwalker=100, nchain=100, nburn=100, min_lag=0.0,
               max_lag=200.0, nthread=100.0)
     ========================================================================
     Input: rmid: rmid for the source
@@ -46,14 +46,15 @@ def rm_single(rmid, nwalker=300, nchain=150, nburn=150, min_lag=0.0,
     # Continuum
     c = get_data([file_co])
     cmod = Cont_Model(c)
-    cmod.do_mcmc(threads=nthread, nwalkers=nwalker, nchains=nchain,
-                 nburns=nburn)
+    cmod.do_mcmc(threads=nthread, nwalkers=nwalker, nchain=nchain,
+                 nburn=nburn)
     # Line
     cy = get_data([file_co, file_hb], names=["Continuum", "Hbeta"])
+    cy.plot(figout=file_lcplot, figext="png")
     cymod = Rmap_Model(cy)
     cymod.do_mcmc(conthpd=cmod.hpd, threads=nthread, fchain=file_rm,
-                  nwalkers=nwalker, nchain=2.0 * nchain, nburn=2.0 * nburn,
+                  nwalkers=nwalker, nchain=nchain, nburn=nburn,
                   laglimit=[[min_lag, max_lag]])
     cymod.show_hist(figout=file_rmplot, figext="png")
-    cypred = cymod.do_pred()
+    cypred = cymod.do_pred(cymod.hpd[1, :])
     cypred.plot(set_pred=True, obs=cy, figout=file_lcplot, figext="png")
