@@ -15,16 +15,16 @@ from javelin.lcmodel import Cont_Model, Rmap_Model
 __all__ = ['rm_single']
 
 
-def rm_single(rmid, nwalker=100, nchain=100, nburn=100, min_lag=0.0,
+def rm_single(rmid, nwalker=200, nchain=200, nburn=200, min_lag=0.0,
               max_lag=200.0, nthread=100.0):
     '''
-    rm_single(rmid, nwalker=100, nchain=100, nburn=100, min_lag=0.0,
+    rm_single(rmid, nwalker=200, nchain=200, nburn=200, min_lag=0.0,
               max_lag=200.0, nthread=100.0)
     ========================================================================
     Input: rmid: rmid for the source
-           nwalker: default 50, number of walkers
-           nchain: default 150, number of chains
-           nburn: default 150, number of burning runs
+           nwalker: default 200, number of walkers
+           nchain: default 200, number of chains
+           nburn: default 200, number of burning runs
            min_lag: default 0.0, minimum time lag allowed
            max_lag: default 200.0, maximum time lag allowed
            nthread: default 100.0, number of thread used
